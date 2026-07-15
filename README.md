@@ -7,7 +7,7 @@ Aprende Ansible desde sus fundamentos teóricos, pasando por el lenguaje YAML y 
 Un vistazo paso a paso de tu viaje de aprendizaje. Sigue el orden de estas etapas para dominar Ansible: desde la teoría básica y tus primeros comandos, hasta la creación de roles complejos y la gestión de seguridad. Haz clic en "Abrir" en cada etapa para ver el contenido detallado.
 | Etapa | Enfoque | Resultado esperado | Ir |
 |:---:|---|---|---|
-| **1** | ¿Qué es Ansible y por qué automatizar? | Entender el funcionamiento del modelo *Push* por SSH y las ventajas de la filosofía declarativa. | [Abrir](./sesion/01-introduccion-ansible.md) |
+| **1** | ¿Qué es Ansible y por qué automatizar? | Entender el funcionamiento del modelo *Push* por SSH y las ventajas de la filosofía declarativa. | [Abrir](./clases/sesion_1.md) |
 | **2** | Introducción al lenguaje YAML | Escribir y estructurar variables, listas y mapas en formato YAML sin errores de indentación. | [Abrir](./sesion/02-playbook-yaml.md) |
 | **3** | Preparación del entorno y laboratorio | Levantar una infraestructura multi-servidor interconectada con Docker Compose para realizar pruebas. | [Abrir](./sesion/03-preparacion-laboratorio.md) |
 | **4** | Primeros pasos con comandos Ad-Hoc | Gestionar e inspeccionar servidores remotos en tiempo real mediante comandos rápidos de una línea. | [Abrir](./sesion/04-comandos-ad-hoc.md) |
@@ -36,7 +36,7 @@ La mejor forma de aprender Ansible es practicando. En esta sección encontrarás
 A continuación tienes a tu disposición las diapositivas de cada sesión en formato PDF. Te recomiendo descargar estos recursos para repasar los conceptos teóricos y tenerlos a mano durante los laboratorios.
 | Material | Descripción | Ir |
 |:---:|---|---|
-| **1** | PDF de la primera sesión  | [Abrir](./material/Sesion01.pdf) |
+| **1** | PDF de la primera sesión  | [Abrir](./material/sesion_1.pdf) |
 | **2** | PDF de la segunda sesión  | [Abrir](./material/Sesion02.pdf) |
 | **3** | PDF de la tercera sesión  | [Abrir](./material/Sesion03.pdf) |
 | **4** | PDF de la cuarta sesión   | [Abrir](./material/Sesion04.pdf) |
