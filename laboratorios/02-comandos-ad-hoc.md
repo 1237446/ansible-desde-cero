@@ -32,6 +32,7 @@ centos1
 
 [all:vars]
 ansible_user=ansible
+ansible_become_password=password
 EOF
 ```
 
