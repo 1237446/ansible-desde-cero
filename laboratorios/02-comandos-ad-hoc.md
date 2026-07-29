@@ -42,10 +42,23 @@ ansible all -i inventory.ini --list-hosts
 ```
 *Deberías ver listados los servidores `ubuntu1` y `centos1` en la salida.*
 ```bash
-  hosts (2):
-    ubuntu1
-    centos1
+hosts (2):
+  ubuntu1
+  centos1
 ```
+
+### Paso 4: Configurar autenticación por Clave SSH
+Generar la clave SSH en el nodo de control:
+```bash
+ssh-keygen -t rsa -b 4096
+```
+
+Copiar la clave pública a los servidores remotos:
+```bash
+ssh-copy-id ansible@ubuntu1
+ssh-copy-id ansible@centos1
+```
+
 ---
 
 ## 3. Ejercicios Prácticos Guiados
