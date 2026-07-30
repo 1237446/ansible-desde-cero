@@ -53,6 +53,29 @@ Generar la clave SSH en el nodo de control:
 ```bash
 ssh-keygen -t rsa -b 4096
 ```
+```bash
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_rsa
+Your public key has been saved in /root/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:lQWXbke+Rd4JkFRLqPLsvsjaykbFZNnh+PzGxHhx8es root@ubuntu-c
+The key's randomart image is:
++---[RSA 4096]----+
+|        o.++B=   |
+|       +o. *o.= .|
+|      +. .+o =.+o|
+|       +ooo = o.=|
+|      . S+ = . + |
+|     .   o=   o  |
+|    .   .  +   E |
+|    ..o ...      |
+|    .+o+.o.      |
++----[SHA256]-----+
+```
 
 Copiar la clave pública a los servidores remotos:
 ```bash
