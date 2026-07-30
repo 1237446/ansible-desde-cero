@@ -77,7 +77,7 @@ playbook: nginx.yml
 ### Paso 3: Simular el Despliegue (Dry Run)
 Primero instalamos el modulo *python3-apt* para poder realizar la validacion:
 ```bash
-ansible ubuntu1 -i inventory.ini -m apt -a "name=python3-apt state=present update_cache=yes" --become
+ansible web -i inventory.ini -m apt -a "name=python3-apt state=present update_cache=yes" --become
 ```
 ```json
 ubuntu1 | SUCCESS => {
@@ -210,7 +210,7 @@ Vuelve a lanzar exactamente el mismo comando de ejecución:
 ansible-playbook -i inventory.ini nginx.yml
 ```
 **Observa el RECAP:**
-```text
+```bash
 PLAY [Desplegar Servidor Web Nginx] **********************************************
 
 TASK [Gathering Facts] ***********************************************************
