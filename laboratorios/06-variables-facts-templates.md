@@ -124,14 +124,72 @@ site_message: "Servidor CentOS para produccion"
 
 ```bash
 ansible-inventory --host ubuntu1
+```
+```json
+{
+    "ansible_become_password": "password",
+    "ansible_user": "ansible",
+    "app_name": "Portal PIT",
+    "common_directories": [
+        "/opt/pit",
+        "/opt/pit/logs"
+    ],
+    "course_name": "Ansible desde Cero",
+    "environment_name": "desarrollo",
+    "http_port": 8080,
+    "managed_by": "Ansible",
+    "nginx_service": "nginx",
+    "organization_name": "Cursos PIT - OTI",
+    "site_color": "#2563eb",
+    "site_message": "Servidor Ubuntu para desarrollo"
+}
+```
+```bash
 ansible-inventory --host centos1
+```
+```json
+{
+    "ansible_become_password": "password",
+    "ansible_user": "ansible",
+    "app_name": "Portal PIT",
+    "common_directories": [
+        "/opt/pit",
+        "/opt/pit/logs"
+    ],
+    "course_name": "Ansible desde Cero",
+    "environment_name": "produccion",
+    "http_port": 8080,
+    "managed_by": "Ansible",
+    "nginx_service": "nginx",
+    "organization_name": "Cursos PIT - OTI",
+    "site_color": "#b91c1c",
+    "site_message": "Servidor CentOS para produccion"
+}
 ```
 
 Consultar una variable específica:
 
 ```bash
 ansible web -m ansible.builtin.debug -a "var=environment_name"
+```
+```json
+ubuntu1 | SUCCESS => {
+    "environment_name": "desarrollo"
+}
+centos1 | SUCCESS => {
+    "environment_name": "produccion"
+}
+```
+```bash
 ansible web -m ansible.builtin.debug -a "var=site_color"
+```
+```json
+ubuntu1 | SUCCESS => {
+    "site_color": "#2563eb"
+}
+centos1 | SUCCESS => {
+    "site_color": "#b91c1c"
+}
 ```
 
 Probar un valor temporal:
@@ -141,24 +199,105 @@ ansible web -m ansible.builtin.debug \
   -a "var=environment_name" \
   -e "environment_name=emergencia"
 ```
+```json
+ubuntu1 | SUCCESS => {
+    "environment_name": "emergencia"
+}
+centos1 | SUCCESS => {
+    "environment_name": "emergencia"
+}
+```
 
 ## Paso 7: Explorar facts
 
 Recopilar todos los facts de un host:
-
 ```bash
 ansible ubuntu1 -m ansible.builtin.setup
 ```
+```bash
+ubuntu1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_all_ipv4_addresses": [
+            "172.18.0.9"
+        ],
+        "ansible_all_ipv6_addresses": [],
+        "ansible_apparmor": {
+            "status": "disabled"
+        },
+...
+```
 
 Filtrar facts específicos:
-
 ```bash
 ansible linux -m ansible.builtin.setup \
   -a "filter=ansible_distribution*"
+```
+```json
+ubuntu1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_distribution": "Ubuntu",
+        "ansible_distribution_file_parsed": true,
+        "ansible_distribution_file_path": "/etc/os-release",
+        "ansible_distribution_file_variety": "Debian",
+        "ansible_distribution_major_version": "22",
+        "ansible_distribution_release": "jammy",
+        "ansible_distribution_version": "22.04",
+        "discovered_interpreter_python": "/usr/bin/python3.10"
+    },
+    "changed": false
+}
+centos1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_distribution": "CentOS",
+        "ansible_distribution_file_parsed": true,
+        "ansible_distribution_file_path": "/etc/centos-release",
+        "ansible_distribution_file_variety": "CentOS",
+        "ansible_distribution_major_version": "9",
+        "ansible_distribution_release": "Stream",
+        "ansible_distribution_version": "9",
+        "discovered_interpreter_python": "/usr/bin/python3.9"
+    },
+    "changed": false
+}
+```
+```bash
 ansible linux -m ansible.builtin.setup \
   -a "filter=ansible_os_family"
+```
+```json
+ubuntu1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_os_family": "Debian",
+        "discovered_interpreter_python": "/usr/bin/python3.10"
+    },
+    "changed": false
+}
+centos1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_os_family": "RedHat",
+        "discovered_interpreter_python": "/usr/bin/python3.9"
+    },
+    "changed": false
+}
+```
+```bash
 ansible linux -m ansible.builtin.setup \
   -a "filter=ansible_memtotal_mb"
+```
+```json
+ubuntu1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_memtotal_mb": 3909,
+        "discovered_interpreter_python": "/usr/bin/python3.10"
+    },
+    "changed": false
+}
+centos1 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_memtotal_mb": 3909,
+        "discovered_interpreter_python": "/usr/bin/python3.9"
+    },
+    "changed": false
 ```
 
 ## Paso 8: Crear el template HTML
@@ -263,6 +402,43 @@ Ejecutar:
 ```bash
 ansible-playbook 01-explorar-facts.yml --syntax-check
 ansible-playbook 01-explorar-facts.yml
+```
+```bash
+PLAY [Explorar facts de los servidores] **************************************************************
+
+TASK [Gathering Facts] *******************************************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [Mostrar facts principales] *********************************************************************
+ok: [ubuntu1] => {
+    "msg": [
+        "Inventario: ubuntu1",
+        "Hostname: ubuntu1",
+        "Distribucion: Ubuntu 22.04",
+        "Familia: Debian",
+        "Arquitectura: x86_64",
+        "CPU virtuales: 2",
+        "Memoria MB: 3909",
+        "Variable de host: Servidor Ubuntu para desarrollo"
+    ]
+}
+ok: [centos1] => {
+    "msg": [
+        "Inventario: centos1",
+        "Hostname: centos1",
+        "Distribucion: CentOS 9",
+        "Familia: RedHat",
+        "Arquitectura: x86_64",
+        "CPU virtuales: 2",
+        "Memoria MB: 3909",
+        "Variable de host: Servidor CentOS para produccion"
+    ]
+}
+
+PLAY RECAP *******************************************************************************************
+centos1                    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+ubuntu1                    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
 Observa cómo cada host muestra valores diferentes según sus facts y variables.
@@ -392,38 +568,166 @@ Crea `02-desplegar-sitio.yml`:
 ## Paso 12: Validar y ejecutar
 
 ### Verificar sintaxis
-
 ```bash
 ansible-playbook 02-desplegar-sitio.yml --syntax-check
 ```
+```yaml
+playbook: 02-desplegar-sitio.yml
+```
 
 ### Mostrar hosts
-
 ```bash
 ansible-playbook 02-desplegar-sitio.yml --list-hosts
 ```
+```yaml
+playbook: 02-desplegar-sitio.yml
+
+  play #1 (web): Desplegar un sitio dinamico multiplataforma    TAGS: []
+    pattern: ['web']
+    hosts (2):
+      ubuntu1
+      centos1
+```
 
 ### Mostrar tareas
-
 ```bash
 ansible-playbook 02-desplegar-sitio.yml --list-tasks
 ```
+```yaml
+playbook: 02-desplegar-sitio.yml
+
+  play #1 (web): Desplegar un sitio dinamico multiplataforma    TAGS: []
+    tasks:
+      Resolver la raiz web segun la familia     TAGS: []
+      Mostrar las variables resueltas   TAGS: []
+      Actualizar cache de APT en Debian TAGS: []
+      Actualizar cache de DNF en RedHat TAGS: []
+      Instalar Nginx    TAGS: []
+      Crear directorios comunes TAGS: []
+      Garantizar que la raiz web exista TAGS: []
+      Generar la pagina personalizada   TAGS: []
+      Generar la configuracion de Nginx TAGS: []
+      Validar la configuracion de Nginx TAGS: []
+      Iniciar y habilitar Nginx TAGS: []
+      Aplicar handlers antes de probar  TAGS: []
+      Esperar el puerto del sitio       TAGS: []
+      Validar la respuesta HTTP TAGS: []
+      Confirmar el contenido entregado  TAGS: []
+```
 
 ### Primera ejecución
-
 ```bash
 ansible-playbook 02-desplegar-sitio.yml --ask-become-pass
 ```
-
 Observa:
 - APT ejecutado en Ubuntu, DNF en CentOS
 - Templates renderizados con valores diferentes por host
 - Handler ejecutado solo si la configuración cambió
 
+```bash
+PLAY [Desplegar un sitio dinamico multiplataforma] ***************************************************
+
+TASK [Gathering Facts] *******************************************************************************
+ok: [centos1]
+ok: [ubuntu1]
+
+TASK [Resolver la raiz web segun la familia] *********************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [Mostrar las variables resueltas] ***************************************************************
+ok: [ubuntu1] => {
+    "msg": [
+        "Host=ubuntu1",
+        "Familia=Debian",
+        "Entorno=desarrollo",
+        "Raiz=/var/www/html",
+        "Puerto=8080"
+    ]
+}
+ok: [centos1] => {
+    "msg": [
+        "Host=centos1",
+        "Familia=RedHat",
+        "Entorno=produccion",
+        "Raiz=/usr/share/nginx/html",
+        "Puerto=8080"
+    ]
+}
+
+TASK [Actualizar cache de APT en Debian] *************************************************************
+skipping: [centos1]
+changed: [ubuntu1]
+
+TASK [Actualizar cache de DNF en RedHat] *************************************************************
+skipping: [ubuntu1]
+ok: [centos1]
+
+TASK [Instalar Nginx] ********************************************************************************
+changed: [centos1]
+changed: [ubuntu1]
+
+TASK [Crear directorios comunes] *********************************************************************
+changed: [ubuntu1] => (item=/opt/pit)
+changed: [centos1] => (item=/opt/pit)
+changed: [ubuntu1] => (item=/opt/pit/logs)
+changed: [centos1] => (item=/opt/pit/logs)
+
+TASK [Garantizar que la raiz web exista] *************************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [Generar la pagina personalizada] ***************************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [Generar la configuracion de Nginx] *************************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [Validar la configuracion de Nginx] *************************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [Iniciar y habilitar Nginx] *********************************************************************
+ok: [ubuntu1]
+changed: [centos1]
+
+TASK [Aplicar handlers antes de probar] **************************************************************
+
+TASK [Aplicar handlers antes de probar] **************************************************************
+
+RUNNING HANDLER [Reiniciar Nginx] ********************************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [Esperar el puerto del sitio] *******************************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [Validar la respuesta HTTP] *********************************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [Confirmar el contenido entregado] **************************************************************
+ok: [ubuntu1] => {
+    "changed": false,
+    "msg": "El sitio de ubuntu1 responde correctamente."
+}
+ok: [centos1] => {
+    "changed": false,
+    "msg": "El sitio de centos1 responde correctamente."
+}
+
+PLAY RECAP *******************************************************************************************
+centos1                    : ok=15   changed=6    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+ubuntu1                    : ok=15   changed=6    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+```
+
 ### Segunda ejecución
 
 ```bash
-ansible-playbook 02-desplegar-sitio.yml --ask-become-pass
+ansible-playbook 02-desplegar-sitio.yml
 ```
 
 La segunda ejecución debe mostrar principalmente `ok`. El handler no debe ejecutarse.
@@ -431,22 +735,61 @@ La segunda ejecución debe mostrar principalmente `ok`. El handler no debe ejecu
 ## Paso 13: Validación manual
 
 ### Verificar servicios
-
 ```bash
 ansible web -b -m ansible.builtin.command \
-  -a "systemctl is-active nginx" \
-  --ask-become-pass
+  -a "systemctl is-active nginx" 
+```
+```bash
+ubuntu1 | CHANGED | rc=0 >>
+active
+centos1 | CHANGED | rc=0 >>
+active
 ```
 
 ### Verificar puertos
-
 ```bash
 ansible web -b -m ansible.builtin.shell \
-  -a "ss -lntp | grep 8080" \
-  --ask-become-pass
+  -a "ss -lntp | grep 8080" 
+```
+```bash
+ubuntu1 | CHANGED | rc=0 >>
+LISTEN 0      511          0.0.0.0:8080       0.0.0.0:*    users:(("nginx",pid=9836,fd=8),("nginx",pid=9835,fd=8),("nginx",pid=9834,fd=8))
+centos1 | CHANGED | rc=0 >>
+LISTEN 0      511          0.0.0.0:8080       0.0.0.0:*    users:(("nginx",pid=4778,fd=8),("nginx",pid=4777,fd=8),("nginx",pid=4776,fd=8))
 ```
 
 ### Consultar sitios
+```bash
+ansible ubuntu1 -m ansible.builtin.uri \
+  -a "url=http://127.0.0.1:8080 return_content=true"
+
+ansible centos1 -m ansible.builtin.uri \
+  -a "url=http://127.0.0.1:8080 return_content=true"
+```
+```json
+ubuntu1 | SUCCESS => {
+    "accept_ranges": "bytes",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.10"
+    },
+    "changed": false,
+    "connection": "close",
+    "content": "<!doctype html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Portal PIT - ubuntu1</title>\n  <style>\n    body {\n      max-width: 760px;\n      margin: 3rem auto;\n      padding: 0 1rem;\n      font-family: sans-serif;\n      color: #1f2937;\n    }\n    h1 {\n      color: #2563eb;\n    }\n    code {\n      background: #f3f4f6;\n      padding: 0.15rem 0.35rem;\n    }\n  </style>\n</head>\n<body>\n  <h1>Portal PIT</h1>\n  <p>Servidor Ubuntu para desarrollo</p>\n  <ul>\n    <li>Host de inventario: <code>ubuntu1</code></li>\n    <li>Hostname real: <code>ubuntu1</code></li>\n    <li>Distribucion: <code>Ubuntu 22.04</code></li>\n    <li>Familia: <code>Debian</code></li>\n    <li>Arquitectura: <code>x86_64</code></li>\n    <li>Entorno: <code>desarrollo</code></li>\n    <li>Puerto: <code>8080</code></li>\n  </ul>\n\n    <p><strong>Modo desarrollo:</strong> entorno preparado para pruebas.</p>\n  \n  <p>Gestionado por Ansible para Cursos PIT - OTI.</p>\n</body>\n</html>\n",
+    "content_length": "1025",
+    "content_type": "text/html",
+    "cookies": {},
+    "cookies_string": "",
+    "date": "Thu, 30 Jul 2026 21:05:12 GMT",
+    "elapsed": 0,
+    "etag": "\"6a6bbba5-401\"",
+    "last_modified": "Thu, 30 Jul 2026 21:01:25 GMT",
+    "msg": "OK (1025 bytes)",
+    "redirected": false,
+    "server": "nginx/1.18.0 (Ubuntu)",
+    "status": 200,
+    "url": "http://127.0.0.1:8080"
+}
+```
 
 ```bash
 ansible ubuntu1 -m ansible.builtin.uri \
@@ -455,19 +798,89 @@ ansible ubuntu1 -m ansible.builtin.uri \
 ansible centos1 -m ansible.builtin.uri \
   -a "url=http://127.0.0.1:8080 return_content=true"
 ```
+```json
+centos1 | SUCCESS => {
+    "accept_ranges": "bytes",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.9"
+    },
+    "changed": false,
+    "connection": "close",
+    "content": "<!doctype html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Portal PIT - centos1</title>\n  <style>\n    body {\n      max-width: 760px;\n      margin: 3rem auto;\n      padding: 0 1rem;\n      font-family: sans-serif;\n      color: #1f2937;\n    }\n    h1 {\n      color: #b91c1c;\n    }\n    code {\n      background: #f3f4f6;\n      padding: 0.15rem 0.35rem;\n    }\n  </style>\n</head>\n<body>\n  <h1>Portal PIT</h1>\n  <p>Servidor CentOS para produccion</p>\n  <ul>\n    <li>Host de inventario: <code>centos1</code></li>\n    <li>Hostname real: <code>centos1</code></li>\n    <li>Distribucion: <code>CentOS 9</code></li>\n    <li>Familia: <code>RedHat</code></li>\n    <li>Arquitectura: <code>x86_64</code></li>\n    <li>Entorno: <code>produccion</code></li>\n    <li>Puerto: <code>8080</code></li>\n  </ul>\n\n    <p><strong>Modo produccion:</strong> cambios controlados y validados.</p>\n  \n  <p>Gestionado por Ansible para Cursos PIT - OTI.</p>\n</body>\n</html>\n",
+    "content_length": "1022",
+    "content_type": "text/html",
+    "cookies": {},
+    "cookies_string": "",
+    "date": "Thu, 30 Jul 2026 21:05:21 GMT",
+    "elapsed": 0,
+    "etag": "\"6a6bbba5-3fe\"",
+    "last_modified": "Thu, 30 Jul 2026 21:01:25 GMT",
+    "msg": "OK (1022 bytes)",
+    "redirected": false,
+    "server": "nginx/1.20.1",
+    "status": 200,
+    "url": "http://127.0.0.1:8080"
+}
+```
 
 ### Ver archivos generados
-
 ```bash
 ansible ubuntu1 -b -m ansible.builtin.command \
   -a "head -n 20 /var/www/html/index.html" \
   --ask-become-pass
+```
+```html
+ubuntu1 | CHANGED | rc=0 >>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal PIT - ubuntu1</title>
+  <style>
+    body {
+      max-width: 760px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+      font-family: sans-serif;
+      color: #1f2937;
+    }
+    h1 {
+      color: #2563eb;
+    }
+    code {
+      background: #f3f4f6;
+      padding: 0.15rem 0.35rem;
+```
 
+```bash
 ansible centos1 -b -m ansible.builtin.command \
   -a "head -n 20 /usr/share/nginx/html/index.html" \
   --ask-become-pass
 ```
-
+```html
+centos1 | CHANGED | rc=0 >>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal PIT - centos1</title>
+  <style>
+    body {
+      max-width: 760px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+      font-family: sans-serif;
+      color: #1f2937;
+    }
+    h1 {
+      color: #b91c1c;
+    }
+    code {
+      background: #f3f4f6;
+      padding: 0.15rem 0.35rem;
+```
 ## Paso 14: Provocar un cambio controlado
 
 Edita `group_vars/web.yml` y cambia el puerto:
