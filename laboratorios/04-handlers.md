@@ -357,5 +357,5 @@ Estado: activo
 
 ```bash
 # Eliminar los archivos creados en el host remoto
-ansible ubuntu -m shell -a "rm -rf /tmp/repaso-handlers"
+ansible web -i inventory.ini -m command -a "rm -rf /tmp/repaso-handlers"
 ```
