@@ -69,6 +69,7 @@ git clone https://github.com/spurin/diveintoansible-lab.git
 ### Paso 7: Desplegar los contenedores
 Accede a la carpeta descargada y ejecuta el siguiente comando para levantar la infraestructura del laboratorio en segundo plano:
 ```bash
+cd diveintoansible-lab
 docker compose up -d
 ```
 
