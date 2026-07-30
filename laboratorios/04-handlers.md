@@ -211,7 +211,7 @@ content: |
 Vuelve a ejecutar:
 
 ```bash
-ansible-playbook handlers-demo.yml
+ansible-playbook -i inventory.ini lab-handlers/handlers-demo.yml
 ```
 
 El handler debe ejecutarse porque el contenido cambió.
@@ -228,7 +228,7 @@ Elimina o comenta la tarea `flush_handlers`:
 Ejecuta y observa:
 
 ```bash
-ansible-playbook handlers-demo.yml
+ansible-playbook -i inventory.ini lab-handlers/handlers-demo.yml
 ```
 
 Ahora el handler se ejecuta **al final** del playbook, después de intentar leer `handler.log`. En la primera ejecución, el archivo no existirá aún y la tarea fallará.
@@ -270,6 +270,9 @@ notify:
 ```
 
 Ejecuta y verifica que ambos handlers se ejecutaron.
+```bash
+ansible-playbook -i inventory.ini lab-handlers/handlers-demo.yml
+```
 
 ---
 
