@@ -210,4 +210,4 @@ ansible all -i inventory.ini -m setup -a "filter=ansible_distribution*"
 
 ---
 
-[Anterior: Laboratorio 01 - Autobiografía YAML](./01-autobiografia-yaml.md) | [Siguiente: Laboratorio 03 - Primer Playbook Nginx](./03-primer-playbook-nginx.md)
+[Anterior: Laboratorio 00 - Preparacion del Laboratorio](./00-preparacion-del-laboratorio.md) | [Siguiente: Laboratorio 03 - Primer Playbook Nginx](./03-primer-playbook-nginx.md)
