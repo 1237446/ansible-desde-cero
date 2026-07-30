@@ -12,72 +12,7 @@ En este laboratorio, configurarás tu primer archivo de inventario de Ansible y 
 
 ---
 
-## 2. Preparación del Laboratorio (Instalacion de Docker)
-En este y los próximos laboratorios trabajaremos con Docker. Para instalarlo en Ubuntu de manera óptima, lo haremos a través del **repositorio oficial**.
-
-### Paso 1: Actualizar paquetes e instalar dependencias
-Ejecuta en tu terminal para actualizar la lista de paquetes preexistente e instalar los paquetes básicos requeridos:
-```bash
-sudo apt update
-sudo apt install -y ca-certificates curl gnupg lsb-release
-```
-
-### Paso 2: Agregar la clave GPG oficial de Docker
-Crea el directorio de claves y añade la clave criptográfica oficial:
-```bash
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
-```
-
-### Paso 3: Añadir el repositorio de Docker a APT
-Agrega la fuente del repositorio a tu configuración de APT con el siguiente comando:
-```bash
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-```
-
-### Paso 4: Instalar Docker Engine y Docker Compose
-Actualiza nuevamente el índice de paquetes para reconocer el nuevo repositorio e instala Docker junto con el complemento de Compose:
-```bash
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
-
-### Paso 5: Verificar la instalación
-Ejecuta el contenedor de prueba `hello-world` para confirmar que todo se descargó e instaló de forma correcta:
-```bash
-sudo docker run hello-world
-```
-
-Si la instalación fue exitosa, verás un mensaje que dice *"Hello from Docker!"*.
-
----
-
-### Configuración opcional: Usar Docker sin `sudo`
-Por defecto, ejecutar comandos de Docker requiere permisos de superusuario (`sudo`).
-Si prefieres no escribir `sudo` cada vez, añade tu usuario al grupo `docker`:
-
-1. Crea el grupo docker (por si no existe) y agrega tu usuario actual:
-```bash
-sudo usermod -aG docker $USER
-```
-
-2. Aplica los cambios de grupo ejecutando:
-```bash
-newgrp docker
-```
-
-3. Verifica probando un comando directo:
-```bash
-docker run hello-world
-```
-
----
-
-## 3. Preparación del Inventario
+## 2. Preparación del Inventario
 
 ### Paso 1: Entrar al contenedor de control
 Asegúrate de estar dentro del nodo de control del laboratorio en tu VM:
@@ -127,7 +62,7 @@ ssh-copy-id ansible@centos1
 
 ---
 
-## 4. Ejercicios Prácticos Guiados
+## 3. Ejercicios Prácticos Guiados
 
 ### Ejercicio 1: Comprobar conectividad global
 Envía una señal para comprobar que Ansible puede comunicarse por SSH y tiene listo Python en los dos servidores:
