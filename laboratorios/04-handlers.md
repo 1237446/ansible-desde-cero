@@ -208,6 +208,17 @@ content: |
   version=2
 ```
 
+```yaml
+- name: Administrar la configuracion de ejemplo
+  ansible.builtin.copy:
+    dest: /tmp/repaso-handlers/aplicacion.conf
+    content: |
+      modo=produccion
+      version=2
+    mode: "0644"
+  notify: Registrar cambio de configuracion
+```
+
 Vuelve a ejecutar:
 
 ```bash
@@ -215,23 +226,50 @@ ansible-playbook -i inventory.ini lab-handlers/handlers-demo.yml
 ```
 
 El handler debe ejecutarse porque el contenido cambió.
+```bash
+ansible web -i inventory.ini -m command -a "cat /tmp/repaso-handlers/aplicacion.conf"
+```
+```bash
+ubuntu1 | CHANGED | rc=0 >>
+modo=produccion
+version=2
+```
 
 ### Ejercicio 2: quitar flush_handlers
 
-Elimina o comenta la tarea `flush_handlers`:
+Eliminamos el archivo creado por el playbook
+```bash
+ansible web -i inventory.ini -m command -a "rm -rf /tmp/repaso-handlers"
+```
 
+Elimina o comenta la tarea `flush_handlers`:
 ```yaml
 # - name: Ejecutar handlers antes de validar
 #   ansible.builtin.meta: flush_handlers
 ```
 
 Ejecuta y observa:
-
 ```bash
 ansible-playbook -i inventory.ini lab-handlers/handlers-demo.yml
 ```
 
 Ahora el handler se ejecuta **al final** del playbook, después de intentar leer `handler.log`. En la primera ejecución, el archivo no existirá aún y la tarea fallará.
+
+```bash
+PLAY [Repasar handlers con un archivo de configuracion] ************************************************************
+
+TASK [Crear el directorio de repaso] *******************************************************************************
+changed: [ubuntu1]
+
+TASK [Administrar la configuracion de ejemplo] *********************************************************************
+changed: [ubuntu1]
+
+TASK [Consultar el registro creado por el handler] *****************************************************************
+fatal: [ubuntu1]: FAILED! => {"changed": false, "cmd": ["cat", "/tmp/repaso-handlers/handler.log"], "delta": "0:00:00.002539", "end": "2026-07-30 16:54:30.703627", "msg": "non-zero return code", "rc": 1, "start": "2026-07-30 16:54:30.701088", "stderr": "cat: /tmp/repaso-handlers/handler.log: No such file or directory", "stderr_lines": ["cat: /tmp/repaso-handlers/handler.log: No such file or directory"], "stdout": "", "stdout_lines": []}
+
+PLAY RECAP *********************************************************************************************************
+ubuntu1                    : ok=2    changed=2    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+```
 
 ### Ejercicio 3: agregar múltiples handlers
 
@@ -252,18 +290,16 @@ handlers:
       mode: "0644"
 ```
 
-Agrega un segundo `notify` en alguna tarea:
+Agrega un segundo `notify` en alguna tarea y cambia el contenido en el playbook:
 
 ```yaml
-notify:
-  - Registrar cambio de configuracion
-  - Crear archivo de estado
-```
-*ejemplo:*
-```yaml
-- name: Mostrar el registro
-  ansible.builtin.debug:
-    var: handler_log.stdout_lines
+- name: Administrar la configuracion de ejemplo
+  ansible.builtin.copy:
+    dest: /tmp/repaso-handlers/aplicacion.conf
+    content: |
+      modo=produccion
+      version=3
+    mode: "0644"
   notify:
     - Registrar cambio de configuracion
     - Crear archivo de estado
@@ -272,6 +308,25 @@ notify:
 Ejecuta y verifica que ambos handlers se ejecutaron.
 ```bash
 ansible-playbook -i inventory.ini lab-handlers/handlers-demo.yml
+```
+
+Verificar el cambio del archivo *aplicacion.conf*
+```bash
+ansible web -i inventory.ini -m command -a "cat /tmp/repaso-handlers/aplicacion.conf"
+```
+```bash
+ubuntu1 | CHANGED | rc=0 >>
+modo=produccion
+version=3
+```
+
+Verificar la creacion del archivo *estado.txt*
+```bash
+ansible web -i inventory.ini -m command -a "cat /tmp/repaso-handlers/estado.txt"
+```
+```bash
+ubuntu1 | CHANGED | rc=0 >>
+Estado: activo
 ```
 
 ---
