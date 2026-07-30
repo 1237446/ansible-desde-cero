@@ -32,10 +32,10 @@ cd lab-handlers
 ### Paso 2: crear el playbook
 
 ```bash
-cat > handlers-demo.yml << 'EOF'
+cat > lab-handlers/handlers-demo.yml << 'EOF'
 ---
 - name: Repasar handlers con un archivo de configuracion
-  hosts: ubuntu
+  hosts: ubuntu1
   gather_facts: false
 
   tasks:
@@ -126,66 +126,70 @@ changed_when: false
 ### Ejecución normal
 
 ```bash
-ansible-playbook handlers-demo.yml
+ansible-playbook -i inventory.ini lab-handlers/handlers-demo.yml
 ```
 
 Salida esperada:
 
-```text
-PLAY [Repasar handlers con un archivo de configuracion] ***
+```bash
+PLAY [Repasar handlers con un archivo de configuracion] **************************
 
-TASK [Crear el directorio de repaso] ***
-changed: [ubuntu]
+TASK [Crear el directorio de repaso] *********************************************
+changed: [ubuntu1]
 
-TASK [Administrar la configuracion de ejemplo] ***
-changed: [ubuntu]
+TASK [Administrar la configuracion de ejemplo] ***********************************
+changed: [ubuntu1]
 
-RUNNING HANDLER [Registrar cambio de configuracion] ***
-changed: [ubuntu]
+TASK [Ejecutar handlers antes de validar] ****************************************
 
-TASK [Consultar el registro creado por el handler] ***
-ok: [ubuntu]
+RUNNING HANDLER [Registrar cambio de configuracion] ******************************
+changed: [ubuntu1]
 
-TASK [Mostrar el registro] ***
-ok: [ubuntu] => {
+TASK [Consultar el registro creado por el handler] *******************************
+ok: [ubuntu1]
+
+TASK [Mostrar el registro] *******************************************************
+ok: [ubuntu1] => {
     "handler_log.stdout_lines": [
         "La configuracion cambio y el handler fue ejecutado."
     ]
 }
 
-PLAY RECAP ***
-ubuntu: ok=5 changed=3 unreachable=0 failed=0
+PLAY RECAP ***********************************************************************
+ubuntu1                    : ok=5    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
 ### Ejecución sin cambios
 
 ```bash
-ansible-playbook handlers-demo.yml
+ansible-playbook -i inventory.ini lab-handlers/handlers-demo.yml
 ```
 
 Salida esperada (segunda ejecución):
 
 ```text
-PLAY [Repasar handlers con un archivo de configuracion] ***
+PLAY [Repasar handlers con un archivo de configuracion] **************************
 
-TASK [Crear el directorio de repaso] ***
-ok: [ubuntu]
+TASK [Crear el directorio de repaso] *********************************************
+ok: [ubuntu1]
 
-TASK [Administrar la configuracion de ejemplo] ***
-ok: [ubuntu]
+TASK [Administrar la configuracion de ejemplo] ***********************************
+ok: [ubuntu1]
 
-TASK [Consultar el registro creado por el handler] ***
-ok: [ubuntu]
+TASK [Ejecutar handlers antes de validar] ****************************************
 
-TASK [Mostrar el registro] ***
-ok: [ubuntu] => {
+TASK [Consultar el registro creado por el handler] *******************************
+ok: [ubuntu1]
+
+TASK [Mostrar el registro] *******************************************************
+ok: [ubuntu1] => {
     "handler_log.stdout_lines": [
         "La configuracion cambio y el handler fue ejecutado."
     ]
 }
 
-PLAY RECAP ***
-ubuntu: ok=4 changed=0 unreachable=0 failed=0
+PLAY RECAP ***********************************************************************
+ubuntu1                    : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
 En la segunda ejecución, el archivo de configuración no cambió, por lo tanto el handler **no se ejecutó**.
@@ -254,6 +258,15 @@ Agrega un segundo `notify` en alguna tarea:
 notify:
   - Registrar cambio de configuracion
   - Crear archivo de estado
+```
+*ejemplo:*
+```yaml
+- name: Mostrar el registro
+  ansible.builtin.debug:
+    var: handler_log.stdout_lines
+  notify:
+    - Registrar cambio de configuracion
+    - Crear archivo de estado
 ```
 
 Ejecuta y verifica que ambos handlers se ejecutaron.
