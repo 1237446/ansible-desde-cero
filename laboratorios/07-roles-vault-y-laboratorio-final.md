@@ -150,8 +150,60 @@ Crea `site.yml`:
 
 ```bash
 ansible-playbook -i inventory.ini site.yml --syntax-check
+ansible-playbook -i inventory.ini site.yml --check
 ansible-playbook -i inventory.ini site.yml
-ansible-playbook -i inventory.ini site.yml
+```
+
+```bash
+PLAY [Aplicar rol de banner] *************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [pit_banner : Crear directorio del banner] ******************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [pit_banner : Generar banner personalizado] *****************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [pit_banner : Consultar el banner generado] *****************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [pit_banner : Mostrar el banner] ****************************************************************
+ok: [ubuntu1] => {
+    "banner_result.stdout_lines": [
+        "Curso: Ansible desde Cero",
+        "Bloque: Sesiones 5 y 6",
+        "Host: ubuntu1",
+        "Sistema: Ubuntu 22.04",
+        "Administrado por Ansible: si"
+    ]
+}
+ok: [centos1] => {
+    "banner_result.stdout_lines": [
+        "Curso: Ansible desde Cero",
+        "Bloque: Sesiones 5 y 6",
+        "Host: centos1",
+        "Sistema: CentOS 9",
+        "Administrado por Ansible: si"
+    ]
+}
+
+RUNNING HANDLER [pit_banner : Informar cambio del banner] ********************************************
+ok: [ubuntu1] => {
+    "msg": "El banner cambio en ubuntu1"
+}
+ok: [centos1] => {
+    "msg": "El banner cambio en centos1"
+}
+
+PLAY RECAP *******************************************************************************************
+centos1                    : ok=6    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+ubuntu1                    : ok=6    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
 **Punto clave**: La segunda ejecución debe terminar con `changed=0`. Esto demuestra idempotencia.
@@ -206,11 +258,177 @@ ansible-playbook -i inventory.ini site-nginx.yml --syntax-check
 ansible-playbook -i inventory.ini site-nginx.yml
 ```
 
+```bash
+PLAY [Instalar y configurar Nginx con un rol de Galaxy] **********************************************
+
+TASK [Gathering Facts] *******************************************************************************
+ok: [centos1]
+ok: [ubuntu1]
+
+TASK [nginx : Include OS-specific variables.] ********************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [nginx : Define nginx_user.] ********************************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [ubuntu1]
+included: /root/sesiones-05-06/roles/nginx/tasks/setup-RedHat.yml for centos1
+
+TASK [nginx : Enable nginx repo.] ********************************************************************
+changed: [centos1]
+
+TASK [nginx : Ensure nginx is installed.] ************************************************************
+ok: [centos1]
+
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [centos1]
+included: /root/sesiones-05-06/roles/nginx/tasks/setup-Ubuntu.yml for ubuntu1
+
+TASK [nginx : Ensure dirmngr is installed (gnupg dependency).] ***************************************
+changed: [ubuntu1]
+
+TASK [nginx : Add PPA for Nginx (if configured).] ****************************************************
+skipping: [ubuntu1]
+
+TASK [nginx : Ensure nginx will reinstall if the PPA was just added.] ********************************
+skipping: [ubuntu1]
+
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [centos1]
+included: /root/sesiones-05-06/roles/nginx/tasks/setup-Debian.yml for ubuntu1
+
+TASK [nginx : Update apt cache.] *********************************************************************
+ok: [ubuntu1]
+
+TASK [nginx : Ensure nginx is installed.] ************************************************************
+ok: [ubuntu1]
+
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [ubuntu1]
+skipping: [centos1]
+
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [ubuntu1]
+skipping: [centos1]
+
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [ubuntu1]
+skipping: [centos1]
+
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [ubuntu1]
+skipping: [centos1]
+
+TASK [nginx : Remove default nginx vhost config file (if configured).] *******************************
+skipping: [ubuntu1]
+skipping: [centos1]
+
+TASK [nginx : Ensure nginx_vhost_path exists.] *******************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [nginx : Add managed vhost config files.] *******************************************************
+skipping: [ubuntu1]
+skipping: [centos1]
+
+TASK [nginx : Remove managed vhost config files.] ****************************************************
+skipping: [ubuntu1]
+skipping: [centos1]
+
+TASK [nginx : Remove legacy vhosts.conf file.] *******************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [nginx : Copy nginx configuration in place.] ****************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [nginx : Ensure nginx service is running as configured.] ****************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+RUNNING HANDLER [nginx : reload nginx] ***************************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+PLAY RECAP *******************************************************************************************
+centos1                    : ok=11   changed=3    unreachable=0    failed=0    skipped=9    rescued=0    ignored=0
+ubuntu1                    : ok=13   changed=3    unreachable=0    failed=0    skipped=10   rescued=0    ignored=0
+```
+
 Validar:
 
 ```bash
 ansible linux -i inventory.ini -b -m uri \
   -a "url=http://localhost status_code=200 return_content=false"
+```
+
+```json
+ubuntu1 | SUCCESS => {
+    "accept_ranges": "bytes",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.10"
+    },
+    "changed": false,
+    "connection": "close",
+    "content_length": "612",
+    "content_type": "text/html",
+    "cookies": {},
+    "cookies_string": "",
+    "date": "Fri, 31 Jul 2026 15:04:50 GMT",
+    "elapsed": 0,
+    "etag": "\"5e9efe7d-264\"",
+    "last_modified": "Tue, 21 Apr 2020 14:09:01 GMT",
+    "msg": "OK (612 bytes)",
+    "redirected": false,
+    "server": "nginx/1.18.0 (Ubuntu)",
+    "status": 200,
+    "url": "http://localhost"
+}
+centos1 | FAILED! => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.9"
+    },
+    "changed": false,
+    "connection": "close",
+    "content_length": "153",
+    "content_type": "text/html",
+    "date": "Fri, 31 Jul 2026 15:04:50 GMT",
+    "elapsed": 0,
+    "msg": "Status code was 403 and not [200]: HTTP Error 403: Forbidden",
+    "redirected": false,
+    "server": "nginx/1.20.1",
+    "status": 403,
+    "url": "http://localhost"
+}
+```
+
+> [\!NOTE]
+> el servicio de Nginx no funcia debido que no responde correctamente en el puerto 80, pero ademas no tiene permiso para leer la carpeta o no existe el archivo
+
+```bash
+---
+- name: Instalar y configurar Nginx con un rol de Galaxy
+  hosts: linux
+  become: true
+
+  roles:
+    - role: nginx
+      vars:
+        nginx_worker_connections: "512"
+        nginx_remove_default_vhost: true
+        nginx_vhosts:
+          - listen: "80 default_server"
+            server_name: "localhost"
+            root: "/usr/share/nginx/html"
+            index: "index.html index.htm"
+            extra_parameters: |
+              location / {
+                  try_files $uri $uri/ =404;
+              }
 ```
 
 ---
@@ -256,9 +474,11 @@ mkdir -p group_vars/all
 ## Paso 2: Cifrar una variable
 
 ```bash
-ansible-vault encrypt_string 'token-demo-pit' \
-  --name 'vault_demo_token' \
-  > group_vars/all/vault.yml
+# 1. Crear el archivo YAML plano
+echo 'vault_demo_token: "token-demo-pit"' > group_vars/all/vault.yml
+
+# 2. Cifrar el archivo completo
+ansible-vault encrypt group_vars/all/vault.yml
 ```
 
 Se solicitará crear una contraseña. Para el laboratorio usa: `pit-vault-2026`
@@ -406,6 +626,7 @@ cd ~
 mkdir -p laboratorio-integrador/group_vars/all laboratorio-integrador/roles
 cd laboratorio-integrador
 ansible-galaxy role init operacion_segura --init-path roles
+sudo apt update && sudo apt install -y sshpass
 ```
 
 ## Paso 2: Crear el inventario
@@ -588,11 +809,13 @@ ok=N  changed=0  unreachable=0  failed=0
 ```bash
 ansible linux -i inventory.ini -b \
   -m ansible.builtin.stat \
-  -a "path=/opt/pit-integrador/app.conf"
+  -a "path=/opt/pit-integrador/app.conf" \
+  --ask-vault-pass
 
 ansible linux -i inventory.ini -b \
   -m ansible.builtin.stat \
-  -a "path=/opt/pit-integrador/app.conf.bak"
+  -a "path=/opt/pit-integrador/app.conf.bak" \
+  --ask-vault-pass
 ```
 
 ## Preguntas de comprensión
