@@ -897,6 +897,31 @@ ansible-playbook 02-desplegar-sitio.yml --ask-become-pass
 
 El handler debe ejecutarse esta vez. Verifica que el sitio responde en el nuevo puerto.
 
+```json
+ubuntu1 | SUCCESS => {
+    "accept_ranges": "bytes",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.10"
+    },
+    "changed": false,
+    "connection": "close",
+    "content": "<!doctype html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Portal PIT - ubuntu1</title>\n  <style>\n    body {\n      max-width: 760px;\n      margin: 3rem auto;\n      padding: 0 1rem;\n      font-family: sans-serif;\n      color: #1f2937;\n    }\n    h1 {\n      color: #2563eb;\n    }\n    code {\n      background: #f3f4f6;\n      padding: 0.15rem 0.35rem;\n    }\n  </style>\n</head>\n<body>\n  <h1>Portal PIT</h1>\n  <p>Servidor Ubuntu para desarrollo</p>\n  <ul>\n    <li>Host de inventario: <code>ubuntu1</code></li>\n    <li>Hostname real: <code>ubuntu1</code></li>\n    <li>Distribucion: <code>Ubuntu 22.04</code></li>\n    <li>Familia: <code>Debian</code></li>\n    <li>Arquitectura: <code>x86_64</code></li>\n    <li>Entorno: <code>desarrollo</code></li>\n    <li>Puerto: <code>8081</code></li>\n  </ul>\n\n    <p><strong>Modo desarrollo:</strong> entorno preparado para pruebas.</p>\n  \n  <p>Gestionado por Ansible para Cursos PIT - OTI.</p>\n</body>\n</html>\n",
+    "content_length": "1025",
+    "content_type": "text/html",
+    "cookies": {},
+    "cookies_string": "",
+    "date": "Fri, 31 Jul 2026 13:41:27 GMT",
+    "elapsed": 0,
+    "etag": "\"6a6ca5c3-401\"",
+    "last_modified": "Fri, 31 Jul 2026 13:40:19 GMT",
+    "msg": "OK (1025 bytes)",
+    "redirected": false,
+    "server": "nginx/1.18.0 (Ubuntu)",
+    "status": 200,
+    "url": "http://127.0.0.1:8081"
+}
+```
+
 Restaura el valor original:
 
 ```yaml
@@ -952,6 +977,40 @@ Ejecutar limpieza:
 
 ```bash
 ansible-playbook 99-limpieza.yml --ask-become-pass
+```
+
+```bash
+PLAY [Limpiar los recursos del laboratorio] **********************************************************
+
+TASK [Gathering Facts] *******************************************************************************
+ok: [centos1]
+ok: [ubuntu1]
+
+TASK [Resolver la raiz web] **************************************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [Eliminar la configuracion del sitio] ***********************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [Eliminar la pagina del laboratorio] ************************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [Eliminar directorios comunes] ******************************************************************
+changed: [ubuntu1] => (item=/opt/pit/logs)
+changed: [centos1] => (item=/opt/pit/logs)
+changed: [ubuntu1] => (item=/opt/pit)
+changed: [centos1] => (item=/opt/pit)
+
+RUNNING HANDLER [Reiniciar Nginx] ********************************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+PLAY RECAP *******************************************************************************************
+centos1                    : ok=6    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+ubuntu1                    : ok=6    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
 ## Preguntas de comprensión
