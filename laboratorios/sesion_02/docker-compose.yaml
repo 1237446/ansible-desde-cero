@@ -1,6 +1,8 @@
 services:
   ansible-control:
-    image: ubuntu:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.control
     container_name: ansible-control
     tty: true
     volumes:
@@ -9,29 +11,37 @@ services:
       - ansible-net
 
   ubuntu-node1:
-    image: ubuntu:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
     container_name: ubuntu-node1
     tty: true
     networks:
       - ansible-net
 
   ubuntu-node2:
-    image: ubuntu:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
     container_name: ubuntu-node2
     tty: true
     networks:
       - ansible-net
 
-  rhle-node1:
-    image: rockylinux:9
-    container_name: rhle-node1
+  rhel-node1:
+    build:
+      context: .
+      dockerfile: Dockerfile.rhel
+    container_name: rhel-node1
     tty: true
     networks:
       - ansible-net
 
-  rhle-node2:
-    image: rockylinux:9
-    container_name: rhle-node2
+  rhel-node2:
+    build:
+      context: .
+      dockerfile: Dockerfile.rhel
+    container_name: rhel-node2
     tty: true
     networks:
       - ansible-net
