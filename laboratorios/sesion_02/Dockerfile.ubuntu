@@ -1,11 +1,9 @@
 FROM ubuntu:latest
-# O si es Rocky Linux: FROM rockylinux:9
 
 # 1. Instalar paquetes necesarios (SSH, sudo, etc.)
 RUN apt-get update && apt-get install -y \
     openssh-server \
-    sudo \
-    && rm -rf /var/lib/apt/lists/*
+    sudo 
 
 # 2. Crear el usuario ansible, definir su contraseña y darle permisos de sudo
 RUN useradd -m -s /bin/bash ansible && \
