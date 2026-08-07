@@ -1,0 +1,41 @@
+services:
+  ansible-control:
+    image: ubuntu:latest
+    container_name: ansible-control
+    tty: true
+    volumes:
+      - ./ansible_data:/home/ansible
+    networks:
+      - ansible-net
+
+  ubuntu-node1:
+    image: ubuntu:latest
+    container_name: ubuntu-node1
+    tty: true
+    networks:
+      - ansible-net
+
+  ubuntu-node2:
+    image: ubuntu:latest
+    container_name: ubuntu-node2
+    tty: true
+    networks:
+      - ansible-net
+
+  rhle-node1:
+    image: rockylinux:9
+    container_name: rhle-node1
+    tty: true
+    networks:
+      - ansible-net
+
+  rhle-node2:
+    image: rockylinux:9
+    container_name: rhle-node2
+    tty: true
+    networks:
+      - ansible-net
+
+networks:
+  ansible-net:
+    driver: bridge
