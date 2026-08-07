@@ -2,6 +2,8 @@ services:
   ansible-control:
     image: ubuntu:latest
     container_name: ansible-control
+    volumes:
+      - ./ansible_data:/home/ansible
     tty: true
     networks:
       - ansible-net
