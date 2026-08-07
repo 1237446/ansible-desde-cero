@@ -1,14 +1,15 @@
 FROM rockylinux:9
 
-# 1. Instalar paquetes necesarios (SSH, sudo, etc.)
-RUN dnf update && dnf install -y \
-    openssh-server \
-    sudo
+# 1. Limpiar caché, actualizar y luego instalar paquetes necesarios
+RUN dnf clean all && \
+    dnf makecache && \
+    dnf install -y openssh-server sudo && \
+    dnf clean all
 
-# 2. Crear el usuario ansible, definir su contraseña y darle permisos de sudo
+# 2. Crear el usuario ansible, definir su contraseña y agregarlo al grupo wheel (sudo en Red Hat)
 RUN useradd -m -s /bin/bash ansible && \
-    echo "password" | passwd --stdin ansible && \
-    usermod -aG sudo ansible
+    echo "ansible:password" | chpasswd && \
+    usermod -aG wheel ansible
 
 # 3. CREAR Y ASEGURAR LA CARPETA .ssh (Aquí está la clave del error anterior)
 RUN mkdir -p /home/ansible/.ssh && \
