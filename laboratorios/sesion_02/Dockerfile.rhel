@@ -1,0 +1,25 @@
+FROM rockylinux:9
+
+# 1. Instalar paquetes necesarios (SSH, sudo, etc.)
+RUN apt-get update && apt-get install -y \
+    openssh-server \
+    sudo
+
+# 2. Crear el usuario ansible, definir su contraseña y darle permisos de sudo
+RUN useradd -m -s /bin/bash ansible && \
+    echo "password" | passwd --stdin ansible && \
+    usermod -aG sudo ansible
+
+# 3. CREAR Y ASEGURAR LA CARPETA .ssh (Aquí está la clave del error anterior)
+RUN mkdir -p /home/ansible/.ssh && \
+    chmod 700 /home/ansible/.ssh && \
+    chown -R ansible:ansible /home/ansible
+
+# 4. Generar las llaves del host y configurar SSH
+RUN ssh-keygen -A && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+EXPOSE 22
+
+# 5. Iniciar el servicio SSH en primer plano
+CMD ["/usr/sbin/sshd", "-D"]
