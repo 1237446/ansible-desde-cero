@@ -1,7 +1,7 @@
 FROM rockylinux:9
 
 # 1. Instalar paquetes necesarios (SSH, sudo, etc.)
-RUN apt-get update && apt-get install -y \
+RUN dnf update && dnf install -y \
     openssh-server \
     sudo
 
