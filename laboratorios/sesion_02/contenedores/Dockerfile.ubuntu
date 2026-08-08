@@ -31,9 +31,5 @@ RUN systemctl enable ssh
 
 EXPOSE 22
 
-# 6. Copiar archivos de configuracion de ansible
-COPY ./ansible.cfg /root/ansible.cfg
-COPY ./inventario /root/inventario.ini
-
 # 6. Definir systemd como el proceso principal
 CMD ["/lib/systemd/systemd"]
