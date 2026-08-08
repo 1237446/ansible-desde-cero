@@ -30,5 +30,4 @@ RUN systemctl enable ssh
 EXPOSE 22
 
 # 6. Definir systemd como el proceso principal
-#VOLUME [ "/sys/fs/cgroup", "/run", "/tmp" ]
 CMD ["/lib/systemd/systemd"]
