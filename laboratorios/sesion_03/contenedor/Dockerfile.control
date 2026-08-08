@@ -1,0 +1,26 @@
+FROM ubuntu:latest
+
+# Actualizar e instalar herramientas necesarias para Ansible y administración
+RUN apt update && apt install -y \
+    ansible \
+    iputils-ping \
+    nano \
+    openssh-client \
+    sudo
+
+# Crear el usuario ansible en el contenedor de control (por si deseas usarlo internamente)
+RUN useradd -m -s /bin/bash ansible && \
+    echo "ansible:password" | chpasswd && \
+    usermod -aG sudo ansible
+
+# Configurar el directorio SSH para el usuario
+RUN mkdir -p /home/ansible/.ssh && \
+    chmod 700 /home/ansible/.ssh && \
+    chown -R ansible:ansible /home/ansible
+
+# 6. Copiar archivos de configuracion de ansible
+COPY ./ansible.cfg /root/ansible.cfg
+COPY ./inventario /root/inventario.ini
+
+# Mantener el contenedor activo para poder entrar con docker exec
+CMD ["sleep", "infinity"]
