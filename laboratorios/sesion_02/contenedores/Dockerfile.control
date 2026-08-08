@@ -18,5 +18,9 @@ RUN mkdir -p /home/ansible/.ssh && \
     chmod 700 /home/ansible/.ssh && \
     chown -R ansible:ansible /home/ansible
 
+# 6. Copiar archivos de configuracion de ansible
+COPY ./ansible.cfg /root/ansible.cfg
+COPY ./inventario /root/inventario.ini
+
 # Mantener el contenedor activo para poder entrar con docker exec
 CMD ["sleep", "infinity"]
