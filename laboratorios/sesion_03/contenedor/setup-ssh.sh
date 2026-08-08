@@ -21,7 +21,7 @@ echo ""
 echo "=== 2. Copiando la clave SSH a los hosts ==="
 
 # Ejemplo con una lista estática de hosts de laboratorio (cámbiala según tus contenedores/VMs)
-HOSTS=("web1" "web2" "web3" "web4")
+HOSTS=("ubuntu-node1" "ubuntu-node2" "ubuntu-node3" "rhel-node1" "rhel-node2" "rhel-node3")
 
 # Puerto SSH por defecto (cámbialo si tus contenedores usan otro puerto mapeado, ej. 2222)
 SSH_PORT=22
