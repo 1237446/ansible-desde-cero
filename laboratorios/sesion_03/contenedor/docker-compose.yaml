@@ -1,0 +1,117 @@
+services:
+  ansible-control:
+    build:
+      context: .
+      dockerfile: Dockerfile.control
+    container_name: ansible-control
+    tty: true
+    volumes:
+      - ./ansible_data:/home/ansible
+    networks:
+      - ansible-net
+
+  ubuntu-node1:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    container_name: ubuntu-node1
+    privileged: true
+    command: /lib/systemd/systemd
+    tty: true
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    port:
+      - 8080:80
+    networks:
+      - ansible-net
+
+  ubuntu-node2:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    container_name: ubuntu-node2
+    privileged: true
+    command: /lib/systemd/systemd
+    tty: true
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    port:
+      - 8080:80
+    networks:
+      - ansible-net
+
+  ubuntu-node3:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    container_name: ubuntu-node3
+    privileged: true
+    command: /lib/systemd/systemd
+    tty: true
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    port:
+      - 8080:80
+    networks:
+      - ansible-net
+
+  rhel-node1:
+    build:
+      context: .
+      dockerfile: Dockerfile.rhel
+    container_name: rhel-node1
+    privileged: true
+    command: /sbin/init
+    tty: true
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    port:
+      - 8081:80
+    networks:
+      - ansible-net
+
+  rhel-node2:
+    build:
+      context: .
+      dockerfile: Dockerfile.rhel
+    container_name: rhel-node2
+    privileged: true
+    command: /sbin/init
+    tty: true
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    port:
+      - 8081:80
+    networks:
+      - ansible-net
+
+  rhel-node3:
+    build:
+      context: .
+      dockerfile: Dockerfile.rhel
+    container_name: rhel-node3
+    privileged: true
+    command: /sbin/init
+    tty: true
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    port:
+      - 8081:80
+    networks:
+      - ansible-net
+
+networks:
+  ansible-net:
+    driver: bridge
