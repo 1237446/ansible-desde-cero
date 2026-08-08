@@ -1,6 +1,7 @@
 # Laboratorio 00: Forks y serials
 
 Este laboratorio tiene como objetivo principal comprender el funcionamiento de la concurrencia y la ejecución por lotes en Ansible mediante el uso de las directivas serial y el parámetro de control forks.
+
 ---
 
 ## 1. Objetivos del Laboratorio
