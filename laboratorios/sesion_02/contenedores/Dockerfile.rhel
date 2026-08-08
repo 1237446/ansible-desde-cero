@@ -28,4 +28,4 @@ RUN systemctl enable sshd
 EXPOSE 22
 
 # 6. Definir systemd como el proceso principal (PID 1)
-CMD ["/usr/sbin/init"
+CMD ["/usr/sbin/init"]
