@@ -16,10 +16,10 @@ En este laboratorio práctico, consolidarás tus conocimientos de Ansible creand
 ## 2. Instrucciones Paso a Paso
 
 ### Paso 1: Crear el archivo del Playbook
-Dentro del nodo de control `ubuntu-c`, crea un archivo llamado `nginx.yml` en la misma carpeta donde se encuentra tu archivo `inventory.ini`:
+Dentro del nodo de control `ansible-control`, crea un archivo llamado `nginx-ubuntu.yml`:
 
 ```bash
-nano nginx.yml
+nano nginx-ubuntu.yml
 ```
 
 Copia y pega el siguiente código en el archivo:
@@ -52,7 +52,7 @@ Copia y pega el siguiente código en el archivo:
               <title>Servidor Ansible</title>
           </head>
           <body>
-              <h1>Servidor Gestionado con Ansible</h1>
+              <h1>Servidor Ubuntu Linux con Ansible</h1>
               <p>Despliegue e infraestructura totalmente automatizados por la OTI.</p>
           </body>
           </html>
@@ -63,63 +63,10 @@ Copia y pega el siguiente código en el archivo:
 
 ---
 
-### Paso 2: Verificar la Sintaxis
-Antes de lanzar el playbook, ejecuta una verificación sintáctica para evitar fallos de formato:
-```bash
-ansible-playbook -i inventory.ini nginx.yml --syntax-check
-```
-*Si la salida solo muestra el nombre del playbook, la sintaxis es correcta.*
-```bash
-playbook: nginx.yml
-```
----
-
-### Paso 3: Simular el Despliegue (Dry Run)
-Primero instalamos el modulo *python3-apt* para poder realizar la validacion:
-```bash
-ansible web -i inventory.ini -m apt -a "name=python3-apt state=present update_cache=yes" --become
-```
-```json
-ubuntu1 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3.10"
-    },
-    "cache_update_time": 1785365441,
-    "cache_updated": false,
-    "changed": false
-}
-```
-
-Prueba qué cambios realizaría Ansible sin llegar a modificar los servidores:
-```bash
-ansible-playbook -i inventory.ini nginx.yml --check
-```
-*Inspecciona la salida para comprobar qué tareas se reportan como "changed" y "failed" en la simulación.*
-
-```bash
-PLAY [Desplegar Servidor Web Nginx] **********************************************
-
-TASK [Gathering Facts] ***********************************************************
-ok: [ubuntu1]
-
-TASK [1. Instalar el paquete de Nginx] *******************************************
-changed: [ubuntu1]
-
-TASK [2. Iniciar y habilitar el servicio de Nginx] *******************************
-fatal: [ubuntu1]: FAILED! => {"changed": false, "msg": "Could not find the requested service nginx: host"}
-
-PLAY RECAP ***********************************************************************
-ubuntu1                    : ok=2    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
-```
-> [\!NOTE]
-> el servicio de Nginx aún no existe en ubuntu1 y el modo --check no realiza ningún cambio real en los servidores; solo simula qué pasaría si lo ejecutaras. Por eso el *failed*
-
----
-
-### Paso 4: Ejecutar el Playbook
+### Paso 2: Ejecutar el Playbook
 Lanza la automatización para aplicar de verdad los cambios en los servidores remotos:
 ```bash
-ansible-playbook -i inventory.ini nginx.yml
+ansible-playbook nginx-ubuntu.yml
 ```
 
 **Analiza el PLAY RECAP final:**
@@ -146,7 +93,7 @@ ubuntu1                    : ok=4    changed=3    unreachable=0    failed=0    s
 
 ---
 
-### Paso 5: Validar el Funcionamiento del Sitio Web
+### Paso 3: Validar el Funcionamiento del Sitio Web
 Comprueba que Nginx está activo y responde con la página web personalizada desde tu nodo de control:
 
 **Verificar estado del servicio por SSH mediante comandos remotos**
