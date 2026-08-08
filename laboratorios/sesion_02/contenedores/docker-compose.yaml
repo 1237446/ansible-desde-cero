@@ -22,6 +22,8 @@ services:
       - /run
       - /run/lock
       - /tmp
+    port:
+      - 8080:80
     networks:
       - ansible-net
 
@@ -37,6 +39,8 @@ services:
       - /run
       - /run/lock
       - /tmp
+    port:
+      - 8081:80
     networks:
       - ansible-net
 
