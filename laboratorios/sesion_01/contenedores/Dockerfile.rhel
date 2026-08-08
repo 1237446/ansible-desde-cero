@@ -3,27 +3,8 @@ FROM redhat/ubi9
 # 1. Instalar systemd, openssh-server, sudo y herramientas del sistema necesarias
 RUN dnf clean all && \
     dnf makecache && \
-    dnf install -y systemd systemd-udev openssh-server sudo procps-ng && \
+    dnf install -y systemd systemd-udev procps-ng && \
     dnf clean all
 
-# 2. Crear el usuario ansible, definir su contraseña y agregarlo al grupo wheel
-RUN useradd -m -s /bin/bash ansible && \
-    echo "ansible:password" | chpasswd && \
-    usermod -aG wheel ansible
-
-# 3. Crear y asegurar la carpeta .ssh
-RUN mkdir -p /home/ansible/.ssh && \
-    chmod 700 /home/ansible/.ssh && \
-    chown -R ansible:ansible /home/ansible
-
-# 4. Generar las llaves del host y configurar SSH
-RUN ssh-keygen -A && \
-    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
-
-# 5. Habilitar el servicio SSH para que systemd lo levante automáticamente al arrancar
-RUN systemctl enable sshd
-
-EXPOSE 22
-
-# 6. Definir systemd como el proceso principal (PID 1)
-CMD ["/usr/sbin/init"
+# 2. Definir systemd como el proceso principal (PID 1)
+CMD ["/usr/sbin/init"]
