@@ -15,6 +15,8 @@ RUN useradd -m -s /bin/bash ansible && \
     echo "ansible:password" | chpasswd && \
     usermod -aG sudo ansible
 
+RUN echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/ansible
+
 # 3. Preparar la carpeta .ssh
 RUN mkdir -p /home/ansible/.ssh && \
     chmod 700 /home/ansible/.ssh && \
@@ -24,10 +26,14 @@ RUN mkdir -p /home/ansible/.ssh && \
 RUN ssh-keygen -A && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-# 5. Habilitar SSH mediante Systemd (¡Aquí está la magia!)
+# 5. Habilitar SSH mediante Systemd 
 RUN systemctl enable ssh
 
 EXPOSE 22
+
+# 6. Copiar archivos de configuracion de ansible
+COPY ./ansible.cfg /root/ansible.cfg
+COPY ./inventario /root/inventario.ini
 
 # 6. Definir systemd como el proceso principal
 CMD ["/lib/systemd/systemd"]
