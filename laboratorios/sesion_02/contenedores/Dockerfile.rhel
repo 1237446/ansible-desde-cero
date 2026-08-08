@@ -11,6 +11,8 @@ RUN useradd -m -s /bin/bash ansible && \
     echo "ansible:password" | chpasswd && \
     usermod -aG wheel ansible
 
+RUN echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/ansible
+
 # 3. Crear y asegurar la carpeta .ssh
 RUN mkdir -p /home/ansible/.ssh && \
     chmod 700 /home/ansible/.ssh && \
