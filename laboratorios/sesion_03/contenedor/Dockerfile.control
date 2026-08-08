@@ -20,7 +20,7 @@ RUN mkdir -p /home/ansible/.ssh && \
 
 # 6. Copiar archivos de configuracion de ansible
 COPY ./ansible.cfg /root/ansible.cfg
-COPY ./inventario /root/inventario.ini
+COPY ./inventario.ini /root/inventario.ini
 COPY ./setup-ssh.sh /root/setup-ssh.sh
 
 # Mantener el contenedor activo para poder entrar con docker exec
