@@ -1,4 +1,4 @@
-# Laboratorio 04: Handlers en Ansible
+# Laboratorio 03: Handlers en Ansible
 
 ## Objetivo
 
