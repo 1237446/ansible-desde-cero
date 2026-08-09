@@ -1,0 +1,35 @@
+FROM ubuntu:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1. Actualizar e instalar herramientas necesarias para Ansible y administración
+RUN apt-get update && apt-get install -y \
+    ansible \
+    iputils-ping \
+    nano \
+    openssh-client \
+    sshpass \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 2. Configurar el directorio SSH para el usuario root
+RUN mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh
+
+# 3. Desactivar el prompt de confirmación de huella (StrictHostKeyChecking)
+RUN printf "Host *\n    StrictHostKeyChecking no\n    UserKnownHostsFile /dev/null\n" > /root/.ssh/config && \
+    chmod 600 /root/.ssh/config
+
+# 4. Copiar las llaves SSH
+COPY id_rsa /root/.ssh/id_rsa
+COPY id_rsa.pub /root/.ssh/id_rsa.pub
+
+# 5. Dar permisos estrictos obligatorios para que SSH acepte la llave privada
+RUN chmod 600 /root/.ssh/id_rsa && \
+    chmod 644 /root/.ssh/id_rsa.pub
+
+# 6. Copiar archivos de configuración de Ansible
+COPY ansible.cfg /root/ansible.cfg
+COPY inventario.ini /root/inventario.ini
+
+# 7. Mantener el contenedor activo para poder entrar con docker exec
+CMD ["sleep", "infinity"]
