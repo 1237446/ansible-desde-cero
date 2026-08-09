@@ -1,27 +1,35 @@
 FROM ubuntu:latest
 
-# Actualizar e instalar herramientas necesarias para Ansible y administración
-RUN apt update && apt install -y \
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1. Actualizar e instalar herramientas necesarias para Ansible y administración
+RUN apt-get update && apt-get install -y \
     ansible \
     iputils-ping \
     nano \
     openssh-client \
-    sudo
+    sshpass \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Crear el usuario ansible en el contenedor de control (por si deseas usarlo internamente)
-RUN useradd -m -s /bin/bash ansible && \
-    echo "ansible:password" | chpasswd && \
-    usermod -aG sudo ansible
+# 2. Configurar el directorio SSH para el usuario root
+RUN mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh
 
-# Configurar el directorio SSH para el usuario
-RUN mkdir -p /home/ansible/.ssh && \
-    chmod 700 /home/ansible/.ssh && \
-    chown -R ansible:ansible /home/ansible
+# 3. Desactivar el prompt de confirmación de huella (StrictHostKeyChecking)
+RUN printf "Host *\n    StrictHostKeyChecking no\n    UserKnownHostsFile /dev/null\n" > /root/.ssh/config && \
+    chmod 600 /root/.ssh/config
 
-# 6. Copiar archivos de configuracion de ansible
-COPY ./ansible.cfg /root/ansible.cfg
-COPY ./inventario.ini /root/inventario.ini
-COPY ./setup-ssh.sh /root/setup-ssh.sh
+# 4. Copiar las llaves SSH
+COPY id_rsa /root/.ssh/id_rsa
+COPY id_rsa.pub /root/.ssh/id_rsa.pub
 
-# Mantener el contenedor activo para poder entrar con docker exec
+# 5. Dar permisos estrictos obligatorios para que SSH acepte la llave privada
+RUN chmod 600 /root/.ssh/id_rsa && \
+    chmod 644 /root/.ssh/id_rsa.pub
+
+# 6. Copiar archivos de configuración de Ansible
+COPY ansible.cfg /root/ansible.cfg
+COPY inventario.ini /root/inventario.ini
+
+# 7. Mantener el contenedor activo para poder entrar con docker exec
 CMD ["sleep", "infinity"]
