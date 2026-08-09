@@ -15,17 +15,23 @@ RUN echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/ansible
 
 # 3. Crear y asegurar la carpeta .ssh
 RUN mkdir -p /home/ansible/.ssh && \
-    chmod 700 /home/ansible/.ssh && \
+    chmod 700 /home/ansible/.ssh
+
+# 4. Inyectar la llave pública directamente (Asegúrate de tener id_rsa.pub junto a este Dockerfile)
+COPY id_rsa.pub /home/ansible/.ssh/authorized_keys
+
+# 5. Ajustar permisos estrictos requeridos por SSH y el propietario
+RUN chmod 600 /home/ansible/.ssh/authorized_keys && \
     chown -R ansible:ansible /home/ansible
 
-# 4. Generar las llaves del host y configurar SSH
+# 6. Generar las llaves del host y configurar SSH
 RUN ssh-keygen -A && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-# 5. Habilitar el servicio SSH para que systemd lo levante automáticamente al arrancar
+# 7. Habilitar el servicio SSH para que systemd lo levante automáticamente al arrancar
 RUN systemctl enable sshd
 
 EXPOSE 22
 
-# 6. Definir systemd como el proceso principal (PID 1)
+# 8. Definir systemd como el proceso principal (PID 1)
 CMD ["/usr/sbin/init"]
