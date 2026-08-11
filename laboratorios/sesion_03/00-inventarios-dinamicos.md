@@ -1,6 +1,4 @@
----
-
-## Laboratorio 00: Inventarios Dinámicos con Docker
+# Laboratorio 00: Inventarios Dinámicos con Docker
 
 En este laboratorio práctico, aprenderás a configurar un inventario dinámico basado en la API de Docker para automatizar entornos multinodo.
 
