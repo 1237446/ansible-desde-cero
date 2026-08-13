@@ -75,16 +75,17 @@ playbook: nginx-rhel.yml
 ### Paso 3: Simular el Despliegue (Dry Run)
 Primero instalamos el modulo *python3-apt* para poder realizar la validacion:
 ```bash
-ansible rhel -m apt -a "name=python3-apt state=present update_cache=yes"
+ansible rhel -m dnf -a "name=python3-dnf state=present update_cache=yes"
 ```
 ```json
-ubuntu1 | SUCCESS => {
+rhel-node1 | SUCCESS => {
     "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3.10"
+        "pkg_mgr": "dnf"
     },
-    "cache_update_time": 1785365441,
-    "cache_updated": false,
-    "changed": false
+    "changed": false,
+    "msg": "Nothing to do",
+    "rc": 0,
+    "results": []
 }
 ```
 
@@ -98,16 +99,16 @@ ansible-playbook nginx-rhel.yml --check
 PLAY [Desplegar Servidor Web Nginx] **********************************************
 
 TASK [Gathering Facts] ***********************************************************
-ok: [ubuntu1]
+ok: [rhel-node1]
 
 TASK [1. Instalar el paquete de Nginx] *******************************************
-changed: [ubuntu1]
+changed: [rhel-node1]
 
 TASK [2. Iniciar y habilitar el servicio de Nginx] *******************************
-fatal: [ubuntu1]: FAILED! => {"changed": false, "msg": "Could not find the requested service nginx: host"}
+fatal: [rhel-node1]: FAILED! => {"changed": false, "msg": "Could not find the requested service nginx: host"}
 
 PLAY RECAP ***********************************************************************
-ubuntu1                    : ok=2    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+rhel-node1                    : ok=2    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
 ```
 > [\!NOTE]
 > el servicio de Nginx aún no existe en ubuntu1 y el modo --check no realiza ningún cambio real en los servidores; solo simula qué pasaría si lo ejecutaras. Por eso el *failed*
@@ -125,19 +126,19 @@ ansible-playbook nginx-rhel.yml
 PLAY [Desplegar Servidor Web Nginx] **********************************************
 
 TASK [Gathering Facts] ***********************************************************
-ok: [ubuntu1]
+ok: [rhel-node1]
 
 TASK [1. Instalar el paquete de Nginx] *******************************************
-changed: [ubuntu1]
+changed: [rhel-node1]
 
 TASK [2. Iniciar y habilitar el servicio de Nginx] *******************************
-changed: [ubuntu1]
+changed: [rhel-node1]
 
 TASK [3. Publicar el index.html personalizado] ***********************************
-changed: [ubuntu1]
+changed: [rhel-node1]
 
 PLAY RECAP ***********************************************************************
-ubuntu1                    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0                   : ok=4    changed=3    unreachable=0    failed=0
+rhel-node1                    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0                     : ok=4    changed=3    unreachable=0    failed=0
 ```
 * **`ok=4`:** Cuatro tareas exitosas (incluyendo la recopilación de datos automática *Gathering Facts*).
 * **`changed=3`:** Tres tareas realizaron cambios reales en el servidor (instaló, inició y copió el HTML).
