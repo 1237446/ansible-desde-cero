@@ -22,16 +22,16 @@ services:
     networks:
       - ansible-net
 
-  rhle-node1:
+  rhel-node1:
     image: rockylinux:9
-    container_name: rhle-node1
+    container_name: rhel-node1
     tty: true
     networks:
       - ansible-net
 
-  rhle-node2:
+  rhel-node2:
     image: rockylinux:9
-    container_name: rhle-node2
+    container_name: rhel-node2
     tty: true
     networks:
       - ansible-net
