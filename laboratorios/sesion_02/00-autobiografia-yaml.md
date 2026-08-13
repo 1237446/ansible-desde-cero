@@ -17,8 +17,8 @@ Este laboratorio tiene como objetivo principal familiarizarte con las reglas de 
 ### Paso 1: Crear la Carpeta de Prácticas
 Dentro de la terminal de tu máquina virtual o en tu terminal local, crea una carpeta aislada para tus prácticas de YAML:
 ```bash
-mkdir -p ~/sesion01-yaml
-cd ~/sesion01-yaml
+mkdir -p ~/sesion02-yaml
+cd ~/sesion02-yaml
 ```
 
 ### Paso 2: Crear el Archivo de Autobiografía
