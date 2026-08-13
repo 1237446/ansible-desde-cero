@@ -87,3 +87,17 @@ usermod -aG wheel ansible
 ```bash
 usermod -aG sudo ansible
 ```
+
+## 4. Instalación de Ansible
+Para instalar Ansible en el nodo de control (`ansible-control`), ejecuta los siguientes comandos:
+
+* **En Ubuntu / Debian:**
+```bash
+sudo apt install -y ansible
+```
+
+### Verificación
+Una vez completada la instalación, confirma que Ansible quedó instalado correctamente comprobando su versión:
+```bash
+ansible --version
+```
