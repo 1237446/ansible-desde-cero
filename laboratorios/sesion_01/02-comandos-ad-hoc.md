@@ -17,35 +17,38 @@ En este laboratorio, configurarás tu primer archivo de inventario de Ansible y 
 ### Paso 1: Entrar al contenedor de control
 Asegúrate de estar dentro del nodo de control del laboratorio en tu VM:
 ```bash
-sudo docker exec -it ubuntu-c bash
+sudo docker exec -it ansible-control bash
 ```
 
 ### Paso 2: Crear el archivo de inventario
 Crea un archivo de texto llamado `inventory.ini` en tu directorio actual:
 ```bash
-cat > inventory.ini <<'EOF'
+cat > inventario.ini <<'EOF'
 [web]
-ubuntu1
+ubuntu-node1
+ubuntu-node2
 
 [db]
-centos1
+rhel-node1
+rhel-node2
 
 [all:vars]
 ansible_user=ansible
-ansible_become_password=password
 EOF
 ```
 
 ### Paso 3: Verificar que Ansible detecte los hosts
 Ejecuta el siguiente comando para listar las máquinas de tu inventario:
 ```bash
-ansible all -i inventory.ini --list-hosts
+ansible all -i inventario.ini --list-hosts
 ```
 *Deberías ver listados los servidores `ubuntu1` y `centos1` en la salida.*
 ```bash
-hosts (2):
-  ubuntu1
-  centos1
+  hosts (4):
+    ubuntu-node1
+    ubuntu-node2
+    rhel-node1
+    rhel-node2
 ```
 
 ### Paso 4: Configurar autenticación por Clave SSH
@@ -79,8 +82,8 @@ The key's randomart image is:
 
 Copiar la clave pública a los servidores remotos:
 ```bash
-ssh-copy-id ansible@ubuntu1
-ssh-copy-id ansible@centos1
+ssh-copy-id ansible@ubuntu-node1
+ssh-copy-id ansible@rhel-node1
 ```
 
 ---
@@ -90,25 +93,63 @@ ssh-copy-id ansible@centos1
 ### Ejercicio 1: Comprobar conectividad global
 Envía una señal para comprobar que Ansible puede comunicarse por SSH y tiene listo Python en los dos servidores:
 ```bash
-ansible all -i inventory.ini -m ping
+ansible all -i inventario.ini -m ping
 ```
 
 **Salida Esperada:**
 ```json
-ubuntu1 | SUCCESS => {
+[WARNING]: Host 'ubuntu-node1' is using the discovered Python interpreter at '/usr/bin/python3.14', but future installation of another Python interpreter could cause a different interpreter to be discovered. See https://docs.ansible.com/ansible-core/2.20/reference_appendices/interpreter_discovery.html for more information.
+ubuntu-node1 | SUCCESS => {
     "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3.10"
+        "discovered_interpreter_python": "/usr/bin/python3.14"
     },
     "changed": false,
     "ping": "pong"
 }
-centos1 | SUCCESS => {
+[WARNING]: Host 'rhle-node1' is using the discovered Python interpreter at '/usr/bin/python3.9', but future installation of another Python interpreter could cause a different interpreter to be discovered. See https://docs.ansible.com/ansible-core/2.20/reference_appendices/interpreter_discovery.html for more information.
+rhle-node1 | SUCCESS => {
     "ansible_facts": {
         "discovered_interpreter_python": "/usr/bin/python3.9"
     },
     "changed": false,
     "ping": "pong"
 }
+```
+El aviso de Ansible es un mensaje informativo estándar. Ansible te está avisando de que tuvo que "adivinar" qué versión de Python usar en la máquina remota
+
+> [\!TIP]
+> Para quitar esta advertencia y asegurarte de que Ansible use siempre el mismo intérprete, puedes definir la ruta explícitamente de dos formas:
+
+#### hosts
+```ini
+[all]
+ubuntu-node1 ansible_python_interpreter=/usr/bin/python3
+```
+#### ansible.cfg
+```ini
+[defaults]
+# Fuerza a Ansible a usar python3 explícitamente en todos los nodos
+interpreter_python = /usr/bin/python3
+```
+
+```json
+ubuntu-node1 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+ubuntu-node2 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+rhle-node2 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+rhle-node1 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+
 ```
 
 ---
@@ -118,11 +159,13 @@ Consulta el tiempo de actividad (`uptime`) y el nombre de host oficial de todos 
 
 **uptime:**
 ```bash
-ansible web -i inventory.ini -m command -a "uptime"
+ansible web -i inventario.ini -m command -a "uptime"
 ```
 ```bash
-ubuntu1 | CHANGED | rc=0 >>
- 22:09:52 up 33 min,  1 user,  load average: 0.02, 0.55, 1.18
+ubuntu-node2 | CHANGED | rc=0 >>
+ 11:56:00 up 1 day, 18:20,  0 users,  load average: 0.41, 0.45, 0.35
+ubuntu-node1 | CHANGED | rc=0 >>
+ 11:56:00 up 1 day, 18:20,  0 users,  load average: 0.41, 0.45, 0.35
 ```
 
 **hostname:**
@@ -130,10 +173,14 @@ ubuntu1 | CHANGED | rc=0 >>
 ansible all -i inventory.ini -m command -a "hostname"
 ```
 ```bash
-ubuntu1 | CHANGED | rc=0 >>
-ubuntu1
-centos1 | CHANGED | rc=0 >>
-centos1
+ubuntu-node1 | CHANGED | rc=0 >>
+6d81b4d2884f
+ubuntu-node2 | CHANGED | rc=0 >>
+775e461c868c
+rhle-node1 | CHANGED | rc=0 >>
+c777061997c1
+rhle-node2 | CHANGED | rc=0 >>
+eb685cc1af1f
 ```
 
 ---
@@ -143,11 +190,11 @@ Usa el módulo `copy` para enviar una línea de texto a un archivo remoto y lueg
 
 1. **Copiar contenido:**
    ```bash
-   ansible web -i inventory.ini -m copy -a "content='Prueba de automatizacion\n' dest=/tmp/prueba.txt"
+   ansible web -i inventario.ini -m copy -a "content='Prueba de automatizacion\n' dest=/tmp/prueba.txt"
    ```
    *Notarás que la salida sale en color **Amarillo** (changed: true) porque el archivo no existía en el destino.*
    ```json
-   ubuntu1 | CHANGED => {
+   ubuntu-node1 | CHANGED => {
     "ansible_facts": {
         "discovered_interpreter_python": "/usr/bin/python3.10"
     },
@@ -168,16 +215,16 @@ Usa el módulo `copy` para enviar una línea de texto a un archivo remoto y lueg
 
 2. **Verificar el contenido en el destino:**
    ```bash
-   ansible web -i inventory.ini -m command -a "cat /tmp/prueba.txt"
+   ansible web -i inventario.ini -m command -a "cat /tmp/prueba.txt"
    ```
    ```bash
-    ubuntu1 | CHANGED | rc=0 >>
+    ubuntu-node1 | CHANGED | rc=0 >>
     Prueba de automatizacion
    ```
 3. **Ejecutar la copia nuevamente:**
    Vuelve a lanzar el comando del paso 1. Notarás que ahora el resultado es verde (`ok`) e indica `"changed": false`. Esto demuestra la **idempotencia** de Ansible: al detectar que el archivo remoto ya tiene el mismo contenido, no lo sobrescribe innecesariamente.
    ```json
-    ubuntu1 | SUCCESS => {
+    ubuntu1-node1 | SUCCESS => {
         "ansible_facts": {
             "discovered_interpreter_python": "/usr/bin/python3.10"
         },
@@ -200,32 +247,30 @@ Usa el módulo `copy` para enviar una línea de texto a un archivo remoto y lueg
 Inspecciona la memoria libre y la distribución de Linux de tus servidores gestionados consultando sus "facts":
 ```bash
 # Filtrar y mostrar solo la versión del SO
-ansible all -i inventory.ini -m setup -a "filter=ansible_distribution*"
+ansible all -i inventario.ini -m setup -a "filter=ansible_distribution*"
 ```
    ```json
-    ubuntu1 | SUCCESS => {
+    rhle-node1 | SUCCESS => {
+        "ansible_facts": {
+            "ansible_distribution": "Rocky",
+            "ansible_distribution_file_parsed": true,
+            "ansible_distribution_file_path": "/etc/redhat-release",
+            "ansible_distribution_file_variety": "RedHat",
+            "ansible_distribution_major_version": "9",
+            "ansible_distribution_release": "Blue Onyx",
+            "ansible_distribution_version": "9.8"
+        },
+        "changed": false
+    }
+    ubuntu-node1 | SUCCESS => {
         "ansible_facts": {
             "ansible_distribution": "Ubuntu",
             "ansible_distribution_file_parsed": true,
             "ansible_distribution_file_path": "/etc/os-release",
             "ansible_distribution_file_variety": "Debian",
-            "ansible_distribution_major_version": "22",
-            "ansible_distribution_release": "jammy",
-            "ansible_distribution_version": "22.04",
-            "discovered_interpreter_python": "/usr/bin/python3.10"
-        },
-        "changed": false
-    }
-    centos1 | SUCCESS => {
-        "ansible_facts": {
-            "ansible_distribution": "CentOS",
-            "ansible_distribution_file_parsed": true,
-            "ansible_distribution_file_path": "/etc/centos-release",
-            "ansible_distribution_file_variety": "CentOS",
-            "ansible_distribution_major_version": "9",
-            "ansible_distribution_release": "Stream",
-            "ansible_distribution_version": "9",
-            "discovered_interpreter_python": "/usr/bin/python3.9"
+            "ansible_distribution_major_version": "26",
+            "ansible_distribution_release": "resolute",
+            "ansible_distribution_version": "26.04"
         },
         "changed": false
     }
