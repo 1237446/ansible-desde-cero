@@ -12,7 +12,28 @@ Este laboratorio tiene como objetivo principal preparar los nodos administrados 
 
 ---
 
-## 2. Preparación de Nodos Administrados y SSH
+## 2. Despliegue del entorno con Docker Compose
+Utiliza los comandos de Docker Compose para descargar las imágenes y levantar los contenedores en segundo plano (*detached mode*):
+
+### Crear e iniciar los contenedores:
+```bash
+docker compose up -d
+```
+
+### Verificar que los contenedores están en ejecución:
+```bash
+docker compose ps
+```
+
+### Ingresar a la terminal interactiva de un contenedor:
+```bash
+docker exec -it <nombre_o_id_del_contenedor> bash
+```
+
+> [\!TIP]
+> Si la imagen del contenedor es muy liviana (como `Alpine Linux`) y no tiene `bash`, sustitúyelo por `sh`
+
+## 3. Preparación de Nodos Administrados y SSH
 
 ### 1. Actualizar los repositorios y paquetes
 Usa el gestor de paquetes de tu distribución para actualizar los paquetes del servidor:
@@ -59,7 +80,7 @@ ssh-keygen -A
 
 ---
 
-## 3. Creación y Configuración del Usuario para Ansible
+## 4. Creación y Configuración del Usuario para Ansible
 
 ### 1. Crear el usuario
 Utiliza el comando `useradd` con la opción `-m` (para que cree automáticamente su directorio personal o *home*) y `-s /bin/bash` (para asignarle la terminal bash por defecto):
@@ -88,7 +109,7 @@ usermod -aG wheel ansible
 usermod -aG sudo ansible
 ```
 
-## 4. Instalación de Ansible
+## 5. Instalación de Ansible
 Para instalar Ansible en el nodo de control (`ansible-control`), ejecuta los siguientes comandos:
 
 * **En Ubuntu / Debian:**
