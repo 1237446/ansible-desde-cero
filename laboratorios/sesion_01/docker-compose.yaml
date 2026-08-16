@@ -1,38 +1,49 @@
 services:
-  ansible-control:
-    image: ubuntu:latest
+  # ----------------------------------------------------
+  # Nodo de Control (Code-Server)
+  # ----------------------------------------------------
+  control-node:
+    image: linuxserver/code-server:latest
     container_name: ansible-control
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Lima
+      - PASSWORD=ansible
+      - SUDO_PASSWORD=ansible
     volumes:
-      - ./ansible_data:/home/ansible
-    tty: true
+      - ./workspace:/config/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8443:8443"
+    networks:
+      - ansible-net
+    restart: unless-stopped
+  # ----------------------------------------------------
+  # Nodo 1: ubuntu 22.04 (systemd + python3)
+  # ----------------------------------------------------
+  ubuntu-node:
+    image: geerlingguy/docker-ubuntu2204-ansible:latest
+    container_name: ansible-ubuntu
+    privileged: true
+    cgroup: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    command: /lib/systemd/systemd
     networks:
       - ansible-net
 
-  ubuntu-node1:
-    image: ubuntu:latest
-    container_name: ubuntu-node1
-    tty: true
-    networks:
-      - ansible-net
-
-  ubuntu-node2:
-    image: ubuntu:latest
-    container_name: ubuntu-node2
-    tty: true
-    networks:
-      - ansible-net
-
-  rhel-node1:
-    image: rockylinux:9
-    container_name: rhel-node1
-    tty: true
-    networks:
-      - ansible-net
-
-  rhel-node2:
-    image: rockylinux:9
-    container_name: rhel-node2
-    tty: true
+  # ----------------------------------------------------
+  # Nodo 2: Rocky Linux 9 (systemd + python3)
+  # ----------------------------------------------------
+  rocky-node:
+    image: geerlingguy/docker-rockylinux9-ansible:latest
+    container_name: ansible-rocky
+    privileged: true
+    cgroup: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    command: /usr/sbin/init
     networks:
       - ansible-net
 
