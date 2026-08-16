@@ -14,27 +14,23 @@ En este laboratorio, configurarás tu primer archivo de inventario de Ansible y 
 
 ## 2. Preparación del Inventario
 
-### Paso 1: Entrar al contenedor de control
-Asegúrate de estar dentro del nodo de control del laboratorio en tu VM:
+### Paso 1: Entrar a VSC web
+Ingresa a tu navegador e ingresa a la siguiente url:
 ```bash
-sudo docker exec -it ansible-control bash
+http://direccion_IP_de_la_VM:8443
 ```
 
 ### Paso 2: Crear el archivo de inventario
 Crea un archivo de texto llamado `inventory.ini` en tu directorio actual:
 ```bash
-cat > inventario.ini <<'EOF'
 [web]
 ubuntu-node1
-ubuntu-node2
 
 [db]
-rhel-node1
-rhel-node2
+redhat-node1
 
 [all:vars]
 ansible_user=ansible
-EOF
 ```
 
 ### Paso 3: Verificar que Ansible detecte los hosts
@@ -42,13 +38,11 @@ Ejecuta el siguiente comando para listar las máquinas de tu inventario:
 ```bash
 ansible all -i inventario.ini --list-hosts
 ```
-*Deberías ver listados los servidores `ubuntu1` y `centos1` en la salida.*
+*Deberías ver listados los servidores `ubuntu-node1` y `rhel-node1` en la salida.*
 ```bash
-  hosts (4):
+  hosts (2):
     ubuntu-node1
-    ubuntu-node2
-    rhel-node1
-    rhel-node2
+    redhat-node1
 ```
 
 ### Paso 4: Configurar autenticación por Clave SSH
@@ -83,7 +77,7 @@ The key's randomart image is:
 Copiar la clave pública a los servidores remotos:
 ```bash
 ssh-copy-id ansible@ubuntu-node1
-ssh-copy-id ansible@rhel-node1
+ssh-copy-id ansible@redhat-node1
 ```
 
 ---
@@ -98,58 +92,20 @@ ansible all -i inventario.ini -m ping
 
 **Salida Esperada:**
 ```json
-[WARNING]: Host 'ubuntu-node1' is using the discovered Python interpreter at '/usr/bin/python3.14', but future installation of another Python interpreter could cause a different interpreter to be discovered. See https://docs.ansible.com/ansible-core/2.20/reference_appendices/interpreter_discovery.html for more information.
-ubuntu-node1 | SUCCESS => {
+ansible-ubuntu | SUCCESS => {
     "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3.14"
+        "discovered_interpreter_python": "/usr/bin/python3"
     },
     "changed": false,
     "ping": "pong"
 }
-[WARNING]: Host 'rhle-node1' is using the discovered Python interpreter at '/usr/bin/python3.9', but future installation of another Python interpreter could cause a different interpreter to be discovered. See https://docs.ansible.com/ansible-core/2.20/reference_appendices/interpreter_discovery.html for more information.
-rhle-node1 | SUCCESS => {
+ansible-rocky | SUCCESS => {
     "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3.9"
+        "discovered_interpreter_python": "/usr/bin/python3"
     },
     "changed": false,
     "ping": "pong"
 }
-```
-El aviso de Ansible es un mensaje informativo estándar. Ansible te está avisando de que tuvo que "adivinar" qué versión de Python usar en la máquina remota
-
-> [\!TIP]
-> Para quitar esta advertencia y asegurarte de que Ansible use siempre el mismo intérprete, puedes definir la ruta explícitamente de dos formas:
-
-#### hosts
-```ini
-[all]
-ubuntu-node1 ansible_python_interpreter=/usr/bin/python3
-```
-#### ansible.cfg
-```ini
-[defaults]
-# Fuerza a Ansible a usar python3 explícitamente en todos los nodos
-interpreter_python = /usr/bin/python3
-```
-
-```json
-ubuntu-node1 | SUCCESS => {
-    "changed": false,
-    "ping": "pong"
-}
-ubuntu-node2 | SUCCESS => {
-    "changed": false,
-    "ping": "pong"
-}
-rhle-node2 | SUCCESS => {
-    "changed": false,
-    "ping": "pong"
-}
-rhle-node1 | SUCCESS => {
-    "changed": false,
-    "ping": "pong"
-}
-
 ```
 
 ---
@@ -162,10 +118,10 @@ Consulta el tiempo de actividad (`uptime`) y el nombre de host oficial de todos 
 ansible web -i inventario.ini -m command -a "uptime"
 ```
 ```bash
-ubuntu-node2 | CHANGED | rc=0 >>
- 11:56:00 up 1 day, 18:20,  0 users,  load average: 0.41, 0.45, 0.35
-ubuntu-node1 | CHANGED | rc=0 >>
- 11:56:00 up 1 day, 18:20,  0 users,  load average: 0.41, 0.45, 0.35
+ansible-ubuntu | CHANGED | rc=0 >>
+ 01:13:57 up  1:51,  1 user,  load average: 0.41, 0.36, 0.41
+ansible-rocky | CHANGED | rc=0 >>
+ 01:13:58 up  1:51,  1 user,  load average: 0.41, 0.36, 0.41
 ```
 
 **hostname:**
@@ -173,14 +129,10 @@ ubuntu-node1 | CHANGED | rc=0 >>
 ansible all -i inventory.ini -m command -a "hostname"
 ```
 ```bash
-ubuntu-node1 | CHANGED | rc=0 >>
-6d81b4d2884f
-ubuntu-node2 | CHANGED | rc=0 >>
-775e461c868c
-rhle-node1 | CHANGED | rc=0 >>
-c777061997c1
-rhle-node2 | CHANGED | rc=0 >>
-eb685cc1af1f
+ansible-ubuntu | CHANGED | rc=0 >>
+acff6d0793e5
+ansible-rocky | CHANGED | rc=0 >>
+071632a88514
 ```
 
 ---
@@ -249,32 +201,34 @@ Inspecciona la memoria libre y la distribución de Linux de tus servidores gesti
 # Filtrar y mostrar solo la versión del SO
 ansible all -i inventario.ini -m setup -a "filter=ansible_distribution*"
 ```
-   ```json
-    rhle-node1 | SUCCESS => {
-        "ansible_facts": {
-            "ansible_distribution": "Rocky",
-            "ansible_distribution_file_parsed": true,
-            "ansible_distribution_file_path": "/etc/redhat-release",
-            "ansible_distribution_file_variety": "RedHat",
-            "ansible_distribution_major_version": "9",
-            "ansible_distribution_release": "Blue Onyx",
-            "ansible_distribution_version": "9.8"
-        },
-        "changed": false
-    }
-    ubuntu-node1 | SUCCESS => {
-        "ansible_facts": {
-            "ansible_distribution": "Ubuntu",
-            "ansible_distribution_file_parsed": true,
-            "ansible_distribution_file_path": "/etc/os-release",
-            "ansible_distribution_file_variety": "Debian",
-            "ansible_distribution_major_version": "26",
-            "ansible_distribution_release": "resolute",
-            "ansible_distribution_version": "26.04"
-        },
-        "changed": false
-    }
-   ```
+```json
+ansible-ubuntu | SUCCESS => {
+    "ansible_facts": {
+        "ansible_distribution": "Ubuntu",
+        "ansible_distribution_file_parsed": true,
+        "ansible_distribution_file_path": "/etc/os-release",
+        "ansible_distribution_file_variety": "Debian",
+        "ansible_distribution_major_version": "22",
+        "ansible_distribution_release": "jammy",
+        "ansible_distribution_version": "22.04",
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false
+}
+ansible-rocky | SUCCESS => {
+    "ansible_facts": {
+        "ansible_distribution": "Rocky",
+        "ansible_distribution_file_parsed": true,
+        "ansible_distribution_file_path": "/etc/redhat-release",
+        "ansible_distribution_file_variety": "RedHat",
+        "ansible_distribution_major_version": "9",
+        "ansible_distribution_release": "Blue Onyx",
+        "ansible_distribution_version": "9.8",
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false
+}}
+```
 
 ---
 
