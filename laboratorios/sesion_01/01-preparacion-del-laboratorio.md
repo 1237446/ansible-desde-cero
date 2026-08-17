@@ -40,6 +40,7 @@ services:
     networks:
       - ansible-net
     restart: unless-stopped
+
   # ----------------------------------------------------
   # Nodo 1: ubuntu 22.04 (systemd + python3)
   # ----------------------------------------------------
@@ -129,6 +130,13 @@ ssh-keygen -A
 ### 4. Iniciar el servicio SSH
 **Dentro de un contenedor Docker**, debes de iniciar el demonio SSH manualmente ejecutando:
 
+* **En Red Hat / Rocky Linux:**
+```bash
+systemctl enable sshd
+systemctl start sshd
+```
+
+* **En Ubuntu / Debian:**
 ```bash
 systemctl enable ssh
 systemctl start ssh
@@ -137,9 +145,16 @@ systemctl start ssh
 ### 5. Validar el servicio SSH
 Ejecutar el comando:
 
+* **En Red Hat / Rocky Linux:**
+```bash
+ssystemctl status sshd
+```
+
+* **En Ubuntu / Debian:**
 ```bash
 systemctl status ssh
 ```
+
 ```bash
 ● ssh.service - OpenBSD Secure Shell server
      Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: enabled)
