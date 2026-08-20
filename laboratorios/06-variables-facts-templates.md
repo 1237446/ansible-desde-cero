@@ -27,12 +27,12 @@ rocky-node1  -> Rocky (RedHat) -> /usr/share/nginx/html
 cd ~
 mkdir -p bonus/inventario/host_vars
 mkdir -p bonus/inventario/group_vars
-mkdir templates
+mkdir -p bonus/templates
 ```
 
 ## Paso 2: Crear el inventario
 
-Crea `inventario.yaml`:
+Crea `inventario/inventario.yaml`:
 
 ```yaml
 all:
@@ -61,7 +61,7 @@ Crea `ansible.cfg`:
 
 ```ini
 [defaults]
-inventory = ./inventario.yaml
+inventory = ./inventario/inventario.yaml
 remote_user = ansible
 stdout_callback = default
 forks = 5
@@ -74,7 +74,7 @@ become_user = root
 
 ## Paso 4: Crear variables de grupo
 
-Crea `group_vars/all.yml`:
+Crea `inventario/group_vars/all.yml`:
 
 ```yaml
 ---
@@ -86,7 +86,7 @@ common_directories:
   - /opt/pit/logs
 ```
 
-Crea `group_vars/webserver.yml`:
+Crea `inventario/group_vars/webserver.yml`:
 
 ```yaml
 ---
@@ -97,7 +97,7 @@ nginx_service: nginx
 
 ## Paso 5: Crear variables de host
 
-Crea `host_vars/ubuntu-node1.yml`:
+Crea `inventario/host_vars/ubuntu-node1.yml`:
 
 ```yaml
 ---
@@ -107,7 +107,7 @@ site_message: "Servidor Ubuntu para desarrollo"
 http_port: 8080
 ```
 
-Crea `host_vars/rocky-node1.yml`:
+Crea `inventario/host_vars/rocky-node1.yml`:
 
 ```yaml
 ---
