@@ -1,8 +1,8 @@
 <div align="center">
-  
-# Ansible desde Cero: Automatiza Linux y Servidores
 
-Aprende Ansible desde sus fundamentos teóricos, pasando por el lenguaje YAML y los comandos ad-hoc, hasta desplegar tu primer playbook automatizado e idempotente sobre un laboratorio multi-servidor en Docker.
+# 🚀 Ansible desde Cero: Automatiza Linux y Servidores
+
+*Aprende Ansible desde sus fundamentos teóricos, pasando por el lenguaje YAML y los comandos ad-hoc, hasta desplegar tu primer playbook automatizado e idempotente sobre un laboratorio multi-servidor en Docker.*
 
 ![Docker](https://img.shields.io/badge/Docker-Compose_v2-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Ansible](https://img.shields.io/badge/Ansible-2.16+-EE0000?style=for-the-badge&logo=ansible&logoColor=white)
@@ -12,43 +12,90 @@ Aprende Ansible desde sus fundamentos teóricos, pasando por el lenguaje YAML y 
 
 </div>
 
-### Ruta Rápida Del Programa
-Un vistazo paso a paso de tu viaje de aprendizaje. Sigue el orden de estas etapas para dominar Ansible: desde la teoría básica y tus primeros comandos, hasta la creación de roles complejos y la gestión de seguridad. Haz clic en "Abrir" en cada etapa para ver el contenido detallado.
-| Etapa | Enfoque | Resultado esperado | Ir |
-|:---:|---|---|---|
-| **1** | ¿Qué es Ansible y por qué automatizar? | Entender el funcionamiento del modelo *Push* por SSH y las ventajas de la filosofía declarativa. | [Abrir](./clases/sesion_1.md) |
-| **2** | Introducción al lenguaje YAML | Escribir y estructurar variables, listas y mapas en formato YAML sin errores de indentación. | [Abrir](./sesion/02-playbook-yaml.md) |
-| **3** | Preparación del entorno y laboratorio | Levantar una infraestructura multi-servidor interconectada con Docker Compose para realizar pruebas. | [Abrir](./sesion/03-preparacion-laboratorio.md) |
-| **4** | Primeros pasos con comandos Ad-Hoc | Gestionar e inspeccionar servidores remotos en tiempo real mediante comandos rápidos de una línea. | [Abrir](./sesion/04-comandos-ad-hoc.md) |
-| **5** | Desarrollo de tu primer Playbook | Escribir y ejecutar un playbook de despliegue para Nginx, asegurando que sea repetible e idempotente. | [Abrir](./sesion/05-primer-playbook.md) |
-| **6** | Inventarios y automatización multi-servidor | Modelar una infraestructura con inventarios estáticos, ejecutar automatizaciones sobre varios grupos, instalar servicios en nodos separados y utilizar handlers para reiniciar servicios. | [Abrir](./sesion/07-inventarios-y-automatizacion-multiservidor.md) |
-| **7** | Variables, Facts, Condicionales y Templates | Definir variables en el playbook, `group_vars/` y `host_vars/`, recopilar y utilizar facts, ejecutar tareas diferentes mediante condiciones `when`, repetir tareas con `loop` y generar archivos personalizados con templates Jinja2. | [Abrir](./sesion/07-inventarios-y-automatizacion-multiservidor.md) |
-| **8** | Roles, Monitoreo, Seguridad y Backups | Crear roles reutilizables con `ansible-galaxy role init`, instalar Node Exporter, cifrar variables con Ansible Vault, auditar SSH y firewall, crear backups verificables y ejecutar un laboratorio integrador. | [Abrir](./sesion/07-inventarios-y-automatizacion-multiservidor.md) |
+---
 
+## 🗺️ Ruta Rápida Del Programa
 
+Un vistazo paso a paso de tu viaje de aprendizaje. Sigue el orden de estas etapas para dominar Ansible: desde la teoría básica y tus primeros comandos, hasta la creación de orquestaciones complejas y plantillas dinámicas.
 
-## Laboratorios
-La mejor forma de aprender Ansible es practicando. En esta sección encontrarás todos los ejercicios guiados paso a paso para aplicar la teoría en un entorno real. Haz clic en "Abrir" para acceder a las instrucciones de cada reto.
-| Laboratorio | Descripción | Ir |
-|---|---|---|
-| 01. Autobiografía YAML | Práctica guiada de estructuración, mapas, listas y formato en YAML. | [Abrir](./laboratorios/01-autobiografia-yaml.md) |
-| 02. Comandos Ad-Hoc | Pruebas de conectividad y gestión remota rápida de servidores. | [Abrir](./laboratorios/02-comandos-ad-hoc.md) |
-| 03. Despliegue de Nginx | Creación, ejecución y verificación de un playbook automatizado e idempotente. | [Abrir](./laboratorios/03-primer-playbook-nginx.md) |
-| 04. Handlers | Uso de handlers para ejecutar tareas condicionales solo cuando hay cambios. | [Abrir](./laboratorios/04-handlers.md) |
-| 05. Inventarios y Multi-Servidor | Despliegue multi-servidor con inventarios estáticos, plays separados y handlers para Nginx y MariaDB. | [Abrir](./laboratorios/05-inventarios-y-multiservidor.md) |
-| 06. Variables, Facts y Templates | Despliegue multiplataforma con variables de grupo y host, facts descubiertos, condicionales `when`, bucles `loop` y templates Jinja2. | [Abrir](./laboratorios/06-variables-facts-templates.md) |
-| 07. Roles, Vault y Laboratorio Final | Creación de roles reutilizables, uso de Ansible Vault para secretos, instalación de Node Exporter, auditoría de seguridad y backup verificable. | [Abrir](./laboratorios/07-roles-vault-y-laboratorio-final.md) |
+| 🗓️ Sesión | 📖 Tema Principal | 🎯 Resultado Esperado | 🔗 Enlace |
+| :---: | :--- | :--- | :---: |
+| **01** | **Primeros pasos y comandos Ad-Hoc** | Entender la arquitectura *Agentless* por SSH, configurar el entorno y ejecutar comandos de diagnóstico en múltiples nodos. | [Abrir](./clases/sesion_1.md) |
+| **02** | **Primer playbook y despliegue de Nginx** | Escribir y estructurar variables, listas y mapas en formato YAML para lograr automatizaciones idempotentes y libres de errores. | [Abrir](./sesion/02-playbook-yaml.md) |
+| **03** | **Inventarios y Automatización Multiservidor** | Orquestar múltiples roles (Web/DB) usando inventarios dinámicos, control de paralelismo y *handlers* eficientes. | [Abrir](./sesion/03-preparacion-laboratorio.md) |
+| **04** | **Variables, Facts, Condicionales y Templates** | Crear playbooks inteligentes que tomen decisiones basadas en variables del sistema y utilicen motores de plantillas Jinja2. | [Abrir](./sesion/04-comandos-ad-hoc.md) |
 
+---
 
+## 💻 Laboratorios Prácticos
 
-## Material de Apoyo
+La mejor forma de asimilar la automatización es practicando. En esta sección encontrarás los ejercicios guiados paso a paso para aplicar la teoría en tu propio entorno aislado. 
+
+*(Haz clic en cada sesión para desplegar sus laboratorios)*
+
+<details open>
+<summary><b>🟢 Sesión 1: Primeros pasos y comandos Ad-Hoc</b></summary>
+<br>
+
+| Laboratorio | Descripción | Enlace |
+| :--- | :--- | :---: |
+| **01. Instalación de Docker** | Despliegue y configuración inicial del motor de contenedores en el host. | [🚀 Ir](./laboratorios/sesion_01/00-instalacion-de-docker.md) |
+| **02. Preparación de Laboratorio** | Levantamiento de la infraestructura multi-nodo aislada con Docker Compose. | [🚀 Ir](./laboratorios/sesion_01/01-preparacion-del-laboratorio.md) |
+| **03. Comandos AD-HOC** | Ejecución de tareas rápidas (ping, comandos, paquetes) sin usar playbooks. | [🚀 Ir](./laboratorios/sesion_01/02-comandos-ad-hoc.md) |
+
+</details>
+
+<details>
+<summary><b>🔵 Sesión 2: Primer playbook y despliegue de Nginx</b></summary>
+<br>
+
+| Laboratorio | Descripción | Enlace |
+| :--- | :--- | :---: |
+| **01. Autobiografía en YAML** | Ejercicio práctico para dominar la indentación, sintaxis y estructura de YAML. | [🚀 Ir](./laboratorios/sesion_02/00-autobiografia-yaml.md) |
+| **02. Primer Playbook de Nginx** | Automatización declarativa e idempotente de un servidor web desde cero. | [🚀 Ir](./laboratorios/sesion_02/01-primer-playbook-nginx.md) |
+| **03. Errores y Depuración** | Simulación de fallos comunes y uso de herramientas de *troubleshooting*. | [🚀 Ir](./laboratorios/sesion_02/02-errores-y-depuracion.md) |
+
+</details>
+
+<details>
+<summary><b>🟠 Sesión 3: Inventarios y Automatización Multiservidor</b></summary>
+<br>
+
+| Laboratorio | Descripción | Enlace |
+| :--- | :--- | :---: |
+| **01. Inventarios Dinámicos** | Consultar recursos en tiempo real en entornos elásticos y orquestadores. | [🚀 Ir](./laboratorios/sesion_03/01-inventarios-dinamicos.md) |
+| **02. Group_vars y Host_vars** | Organización profesional de variables separadas de la lógica del playbook. | [🚀 Ir](./laboratorios/sesion_03/02-group-host-vars.md) |
+| **03. Forks y Serials** | Control avanzado de paralelismo y despliegues progresivos por lotes. | [🚀 Ir](./laboratorios/sesion_03/03-forks-y-serials.md) |
+| **04. Handlers (Manejadores)** | Configuración de tareas reactivas para reiniciar servicios solo tras cambios reales. | [🚀 Ir](./laboratorios/sesion_03/04-handlers.md) |
+
+</details>
+
+<details>
+<summary><b>🟣 Sesión 4: Variables, Facts, Condicionales y Templates</b></summary>
+<br>
+
+| Laboratorio | Descripción | Enlace |
+| :--- | :--- | :---: |
+| **01. Facts (Valores descubiertos)** | Recopilación y uso de información intrínseca del sistema operativo destino. | [🚀 Ir](./laboratorios/sesion_04/01-facts.md) |
+| **02. When (Condicionales)** | Ejecución selectiva de tareas basada en arquitectura lógica o sistema operativo. | [🚀 Ir](./laboratorios/sesion_04/02-condicionales-when.md) |
+| **03. Loops (Bucles)** | Reducción de código mediante la iteración para crear múltiples usuarios o paquetes. | [🚀 Ir](./laboratorios/sesion_04/03-loops.md) |
+| **04. Templates (Plantillas Jinja2)** | Inyección de variables en archivos de configuración generados dinámicamente. | [🚀 Ir](./laboratorios/sesion_04/04-templates.md) |
+
+</details>
+
+---
+
+## 📚 Material de Apoyo
+
 A continuación tienes a tu disposición las diapositivas de cada sesión en formato PDF. Te recomiendo descargar estos recursos para repasar los conceptos teóricos y tenerlos a mano durante los laboratorios.
-| Material | Descripción | Ir |
-|:---:|---|---|
-| **1** | PDF de la primera sesión  | [Abrir](./material/sesion_1.pdf) |
-| **2** | PDF de la segunda sesión  | [Abrir](./material/Sesion02.pdf) |
-| **3** | PDF de la tercera sesión  | [Abrir](./material/Sesion03.pdf) |
-| **4** | PDF de la cuarta sesión   | [Abrir](./material/Sesion04.pdf) |
-| **5** | PDF de la quinta sesión   | [Abrir](./material/Sesion05.pdf) |
-| **6** | PDF de la sexta sesión    | [Abrir](./material/Sesion06.pdf) |
-| **7** | PDF de todas las sesiones | [Abrir](./material/Programa_Completo_Ansible.pdf) |
+
+| 📄 Documento | Descripción | Descarga |
+| :--- | :--- | :---: |
+| **Presentación Sesión 1** | Arquitectura SSH, Modelo Push y Fundamentos Agentless. | [📥 Bajar](./material/sesion_01.pdf) |
+| **Presentación Sesión 2** | Lenguaje YAML, Estructura de Playbooks e Idempotencia. | [📥 Bajar](./material/sesion_02.pdf) |
+| **Presentación Sesión 3** | Automatización Multiservidor, Variables y Manejadores. | [📥 Bajar](./material/sesion_03.pdf) |
+
+<br>
+<div align="center">
+  <i>Construido para la comunidad de <b>Cursos PIT - Transformación Digital OTI UNI</b></i>
+</div>
