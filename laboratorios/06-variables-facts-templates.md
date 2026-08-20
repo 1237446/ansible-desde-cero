@@ -18,9 +18,7 @@ En este laboratorio crearás un despliegue multiplataforma que utiliza variables
 
 ```text
 ubuntu-node1  -> Ubuntu (Debian) -> /var/www/html
-ubuntu-node2  -> Ubuntu (Debian) -> /var/www/html
 rocky-node1  -> Rocky (RedHat) -> /usr/share/nginx/html
-rocky-node2  -> Rocky (RedHat) -> /usr/share/nginx/html
 ```
 
 ## Paso 1: Crear el proyecto
@@ -46,11 +44,9 @@ all:
     ubuntu:
       hosts:
         ubuntu-node1:
-        ubuntu-node2:
     rocky:
       hosts:
         rocky-node1:
-        rocky-node2:
     servers:
       children:
         ubuntu:
@@ -108,6 +104,7 @@ Crea `host_vars/ubuntu-node1.yml`:
 environment_name: desarrollo
 site_color: "#2563eb"
 site_message: "Servidor Ubuntu para desarrollo"
+http_port: 8080
 ```
 
 Crea `host_vars/rocky-node1.yml`:
@@ -116,7 +113,8 @@ Crea `host_vars/rocky-node1.yml`:
 ---
 environment_name: produccion
 site_color: "#b91c1c"
-site_message: "Servidor RockyOS para produccion"
+site_message: "Servidor Rocky para produccion"
+http_port: 8082
 ```
 
 ## Paso 6: Inspeccionar variables resueltas
