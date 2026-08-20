@@ -1,7 +1,16 @@
+<div align="center">
+  
 # Ansible desde Cero: Automatiza Linux y Servidores
+
 Aprende Ansible desde sus fundamentos teóricos, pasando por el lenguaje YAML y los comandos ad-hoc, hasta desplegar tu primer playbook automatizado e idempotente sobre un laboratorio multi-servidor en Docker.
 
+![Docker](https://img.shields.io/badge/Docker-Compose_v2-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Ansible](https://img.shields.io/badge/Ansible-2.16+-EE0000?style=for-the-badge&logo=ansible&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
+![Rocky Linux](https://img.shields.io/badge/Rocky_Linux-9-10B981?style=for-the-badge&logo=rockylinux&logoColor=white)
+![VS Code](https://img.shields.io/badge/VS_Code-code--server-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)
 
+</div>
 
 ### Ruta Rápida Del Programa
 Un vistazo paso a paso de tu viaje de aprendizaje. Sigue el orden de estas etapas para dominar Ansible: desde la teoría básica y tus primeros comandos, hasta la creación de roles complejos y la gestión de seguridad. Haz clic en "Abrir" en cada etapa para ver el contenido detallado.
