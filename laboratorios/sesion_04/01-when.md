@@ -1,4 +1,4 @@
-# Laboratorio 01: Controlando el flujo con `when` (Ejercicios Individuales)
+# Laboratorio 01: Controlando el flujo con `when`
 
 Este laboratorio tiene como objetivo principal comprender el uso de **condicionales** en Ansible a través de la directiva **`when`**. Esta herramienta es fundamental para tomar decisiones lógicas durante la ejecución de un Playbook, permitiendo que una tarea se ejecute o se omita dependiendo de ciertas condiciones (como el sistema operativo, la memoria disponible o el resultado de una tarea anterior).
 
