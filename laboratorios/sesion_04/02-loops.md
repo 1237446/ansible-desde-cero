@@ -1,4 +1,4 @@
-# Laboratorio 02: Dominando Loop Control (Ejercicios Individuales)
+# Laboratorio 02: Dominando Loop Control
 
 Este laboratorio tiene como objetivo principal comprender el funcionamiento y la personalización de los bucles en Ansible mediante el uso de la directiva `loop_control`.
 
@@ -8,6 +8,7 @@ Para facilitar el aprendizaje, **hemos separado cada parámetro en su propio arc
 
 ## 1. Objetivos del Laboratorio
 
+* Acceder a los atributos específicos de un diccionario durante la iteración utilizando la notación de punto (ej. `item.clave`).
 * Ejecutar tareas iterativas en un entorno multinodo heterogéneo (2 servidores Ubuntu y 2 servidores Rocky Linux).
 * Cambiar el nombre de la variable iteradora por defecto (`item`) para mejorar la legibilidad.
 * Limpiar la salida estándar de la consola ocultando datos sensibles o extensos.
@@ -16,7 +17,62 @@ Para facilitar el aprendizaje, **hemos separado cada parámetro en su propio arc
 
 ---
 
-## 2. Ejercicio A: Renombrar variables con `loop_var`
+## 2. Crea el Playbook de Prueba
+
+En este ejercicio, crearemos tres archivos diferentes en el directorio temporal, pero cada uno tendrá un nombre y un nivel de permisos (mode) distinto.
+
+Crea el archivo `test-loop-dict.yml` e ingresa el siguiente código:
+
+```yaml
+---
+- hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Crear archivos con configuraciones especificas
+      ansible.builtin.file:
+        path: "/tmp/{{ item.nombre }}.conf"
+        state: touch
+        mode: "{{ item.permisos }}"
+      loop:
+        - nombre: "base_datos"
+          permisos: "0600"
+        - nombre: "servidor_web"
+          permisos: "0644"
+        - nombre: "aplicacion"
+          permisos: "0755"
+```
+
+---
+
+### Prueba Práctica y Análisis
+
+Ejecuta el playbook en tu terminal para aplicar los cambios de forma iterativa en tus nodos:
+
+```bash
+ansible-playbook test-loop-dict.yml
+
+```
+
+**El resultado visual en la consola:**
+
+```bash
+TASK [Crear archivos con configuraciones especificas] *****************************************************************
+changed: [ubuntu-node1] => (item={'nombre': 'base_datos', 'permisos': '0600'})
+changed: [ubuntu-node1] => (item={'nombre': 'servidor_web', 'permisos': '0644'})
+changed: [ubuntu-node1] => (item={'nombre': 'aplicacion', 'permisos': '0755'})
+changed: [rocky-node1] => (item={'nombre': 'base_datos', 'permisos': '0600'})
+... 
+
+```
+
+**Análisis del comportamiento:**
+
+La directiva `loop` tomó nuestra lista y ejecutó el módulo `file` tres veces seguidas por cada servidor. En cada ciclo, Ansible guardó temporalmente el diccionario actual en la variable genérica `item`.
+
+Al escribir `{{ item.nombre }}` y `{{ item.permisos }}`, le indicamos a Ansible que extrajera exclusivamente el valor asociado a esas claves para esa iteración en particular. Esto demuestra cómo un solo bloque de código conciso puede generar múltiples recursos con configuraciones altamente dinámicas.
+
+## 3. Ejercicio A: Renombrar variables con `loop_var`
 
 El parámetro `loop_var` nos permite cambiar el nombre genérico `item` por una palabra que tenga sentido para nuestro código.
 
@@ -68,7 +124,7 @@ Al escribir el código, en lugar de usar el genérico `{{ item }}`, utilizamos `
 
 ---
 
-## 3. Ejercicio B: Limpiar la consola con `label`
+## 4. Ejercicio B: Limpiar la consola con `label`
 
 El parámetro `label` nos permite controlar qué información se imprime en el resumen de cada iteración en la consola (la parte que dice `item=...`).
 
@@ -120,7 +176,7 @@ Fíjate en la etiqueta `(item=admin)`. Si no hubiéramos usado `label: "{{ item.
 
 ---
 
-## 4. Ejercicio C: Contar iteraciones con `index_var`
+## 5. Ejercicio C: Contar iteraciones con `index_var`
 
 El parámetro `index_var` crea automáticamente un contador numérico que inicia en 0 y suma 1 por cada vuelta que da el bucle.
 
@@ -172,7 +228,7 @@ Ansible automáticamente inicializó la variable `indice` en `0` durante la prim
 
 ---
 
-## 5. Ejercicio D: Controlar el tiempo con `pause`
+## 6. Ejercicio D: Controlar el tiempo con `pause`
 
 El parámetro `pause` fuerza a Ansible a detener su ejecución durante una cantidad específica de segundos entre cada ciclo del bucle.
 
