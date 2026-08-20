@@ -21,9 +21,9 @@ Un vistazo paso a paso de tu viaje de aprendizaje. Sigue el orden de estas etapa
 | 🗓️ Sesión | 📖 Tema Principal | 🎯 Resultado Esperado | 🔗 Enlace |
 | :---: | :--- | :--- | :---: |
 | **01** | **Primeros pasos y comandos Ad-Hoc** | Entender la arquitectura *Agentless* por SSH, configurar el entorno y ejecutar comandos de diagnóstico en múltiples nodos. | [Abrir](./clases/sesion_1.md) |
-| **02** | **Primer playbook y despliegue de Nginx** | Escribir y estructurar variables, listas y mapas en formato YAML para lograr automatizaciones idempotentes y libres de errores. | [Abrir](./sesion/02-playbook-yaml.md) |
-| **03** | **Inventarios y Automatización Multiservidor** | Orquestar múltiples roles (Web/DB) usando inventarios dinámicos, control de paralelismo y *handlers* eficientes. | [Abrir](./sesion/03-preparacion-laboratorio.md) |
-| **04** | **Variables, Facts, Condicionales y Templates** | Crear playbooks inteligentes que tomen decisiones basadas en variables del sistema y utilicen motores de plantillas Jinja2. | [Abrir](./sesion/04-comandos-ad-hoc.md) |
+| **02** | **Primer playbook y despliegue de Nginx** | Escribir y estructurar variables, listas y mapas en formato YAML para lograr automatizaciones idempotentes y libres de errores. | [Abrir](./clases/sesion_2.md) |
+| **03** | **Inventarios y Automatización Multiservidor** | Orquestar múltiples roles (Web/DB) usando inventarios dinámicos, control de paralelismo y *handlers* eficientes. | [Abrir](./clases/sesion_3.md) |
+| **04** | **Variables, Facts, Condicionales y Templates** | Crear playbooks inteligentes que tomen decisiones basadas en variables del sistema y utilicen motores de plantillas Jinja2. | [Abrir](./clases) |
 
 ---
 
