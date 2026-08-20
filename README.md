@@ -65,8 +65,8 @@ La mejor forma de asimilar la automatización es practicando. En esta sección e
 | :--- | :--- | :---: |
 | **01. Inventarios Dinámicos** | Consultar recursos en tiempo real en entornos elásticos y orquestadores. | [🚀 Ir](./laboratorios/sesion_03/00-inventarios-dinamicos.md) |
 | **02. Group_vars y Host_vars** | Organización profesional de variables separadas de la lógica del playbook. | [🚀 Ir](./laboratorios/sesion_03/01-group_host_vars.md) |
-| **03. Forks y Serials** | Control avanzado de paralelismo y despliegues progresivos por lotes. | [🚀 Ir](./laboratorios/sesion_03/01-forks-serial.md) |
-| **04. Handlers (Manejadores)** | Configuración de tareas reactivas para reiniciar servicios solo tras cambios reales. | [🚀 Ir](./laboratorios/sesion_03/02-handlers.md) |
+| **03. Forks y Serials** | Control avanzado de paralelismo y despliegues progresivos por lotes. | [🚀 Ir](./laboratorios/sesion_03/02-forks-serial.md) |
+| **04. Handlers (Manejadores)** | Configuración de tareas reactivas para reiniciar servicios solo tras cambios reales. | [🚀 Ir](./laboratorios/sesion_03/03-handlers.md) |
 
 </details>
 
