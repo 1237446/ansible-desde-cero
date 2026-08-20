@@ -1,4 +1,4 @@
-# Laboratorio 00: Ansible Facts y Set Fact (Ejercicios Individuales)
+# Laboratorio 00: Ansible Facts y Set Fact
 
 Este laboratorio tiene como objetivo principal comprender cómo Ansible recopila información automática del sistema a través de los **Ansible Facts**, y cómo podemos crear o modificar nuestras propias variables al vuelo durante la ejecución utilizando el módulo **`set_fact`**.
 
