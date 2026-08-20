@@ -201,6 +201,7 @@ La idempotencia es el concepto más importante en Ansible: **Ejecutar el mismo p
    * **NO ➔** Aplicar cambios (Estado: `Changed`).
 3. Estado Final Alcanzado.
 
+> [\!TIP]
 > **Regla de oro:** La segunda ejecución de un buen playbook debería mostrar `changed=0`.
 
 ---
