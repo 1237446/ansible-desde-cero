@@ -91,9 +91,9 @@ A continuación tienes a tu disposición las diapositivas de cada sesión en for
 
 | 📄 Documento | Descripción | Descarga |
 | :--- | :--- | :---: |
-| **Presentación Sesión 1** | Arquitectura SSH, Modelo Push y Fundamentos Agentless. | [📥 Bajar](./material/sesion_01.pdf) |
-| **Presentación Sesión 2** | Lenguaje YAML, Estructura de Playbooks e Idempotencia. | [📥 Bajar](./material/sesion_02.pdf) |
-| **Presentación Sesión 3** | Automatización Multiservidor, Variables y Manejadores. | [📥 Bajar](./material/sesion_03.pdf) |
+| **Presentación Sesión 1** | Arquitectura SSH, Modelo Push y Fundamentos Agentless. | [📥 Bajar](./diapositivas/Automatización_con_Ansible_1.pdf) |
+| **Presentación Sesión 2** | Lenguaje YAML, Estructura de Playbooks e Idempotencia. | [📥 Bajar](./diapositivas/Automatización_con_Ansible_2.pdf) |
+| **Presentación Sesión 3** | Automatización Multiservidor, Variables y Manejadores. | [📥 Bajar](./diapositivas/Automatización_con_Ansible_3.pdf) |
 
 <br>
 <div align="center">
