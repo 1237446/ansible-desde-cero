@@ -288,12 +288,18 @@ Agrega un segundo `notify` en alguna tarea y cambia el contenido en el playbook:
   ansible.builtin.copy:
     dest: /tmp/repaso-handlers/aplicacion.conf
     content: |
-      modo=produccion
-      version=3
+      modo=laboratorio
+      version=1
     mode: "0644"
   notify:
     - Registrar cambio de configuracion
     - Crear archivo de estado
+```
+
+Copia o descomenta la tarea `flush_handlers`:
+```yaml
+- name: Ejecutar handlers antes de validar
+  ansible.builtin.meta: flush_handlers
 ```
 
 Ejecuta y verifica que ambos handlers se ejecutaron.
@@ -307,8 +313,8 @@ ansible ubuntu-node1 -m command -a "cat /tmp/repaso-handlers/aplicacion.conf"
 ```
 ```bash
 ubuntu1 | CHANGED | rc=0 >>
-modo=produccion
-version=3
+modo=laboratorio
+version=1
 ```
 
 Verificar la creacion del archivo *estado.txt*
