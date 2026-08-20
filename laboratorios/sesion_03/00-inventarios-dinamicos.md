@@ -96,7 +96,7 @@ if __name__ == "__main__":
 ## 3. Preparación del Entorno Virtual y Dependencias
 Instala el paquete de entorno virtual del sistema y configura las librerías necesarias:
 ```bash
-sudo apt install python3.14-venv
+sudo apt install python3-venv
 ```
 
 Ejecuta el siguiente comando en tu terminal para crear una carpeta con un entorno virtual aislado (por ejemplo, llamado `venv`):
