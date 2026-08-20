@@ -63,10 +63,10 @@ La mejor forma de asimilar la automatización es practicando. En esta sección e
 
 | Laboratorio | Descripción | Enlace |
 | :--- | :--- | :---: |
-| **01. Inventarios Dinámicos** | Consultar recursos en tiempo real en entornos elásticos y orquestadores. | [🚀 Ir](./laboratorios/sesion_03/01-inventarios-dinamicos.md) |
-| **02. Group_vars y Host_vars** | Organización profesional de variables separadas de la lógica del playbook. | [🚀 Ir](./laboratorios/sesion_03/02-group-host-vars.md) |
-| **03. Forks y Serials** | Control avanzado de paralelismo y despliegues progresivos por lotes. | [🚀 Ir](./laboratorios/sesion_03/03-forks-y-serials.md) |
-| **04. Handlers (Manejadores)** | Configuración de tareas reactivas para reiniciar servicios solo tras cambios reales. | [🚀 Ir](./laboratorios/sesion_03/04-handlers.md) |
+| **01. Inventarios Dinámicos** | Consultar recursos en tiempo real en entornos elásticos y orquestadores. | [🚀 Ir](./laboratorios/sesion_03/00-inventarios-dinamicos.md) |
+| **02. Group_vars y Host_vars** | Organización profesional de variables separadas de la lógica del playbook. | [🚀 Ir](./laboratorios/sesion_03/01-group_host_vars.md) |
+| **03. Forks y Serials** | Control avanzado de paralelismo y despliegues progresivos por lotes. | [🚀 Ir](./laboratorios/sesion_03/01-forks-serial.md) |
+| **04. Handlers (Manejadores)** | Configuración de tareas reactivas para reiniciar servicios solo tras cambios reales. | [🚀 Ir](./laboratorios/sesion_03/02-handlers.md) |
 
 </details>
 
@@ -76,10 +76,10 @@ La mejor forma de asimilar la automatización es practicando. En esta sección e
 
 | Laboratorio | Descripción | Enlace |
 | :--- | :--- | :---: |
-| **01. Facts (Valores descubiertos)** | Recopilación y uso de información intrínseca del sistema operativo destino. | [🚀 Ir](./laboratorios/sesion_04/01-facts.md) |
-| **02. When (Condicionales)** | Ejecución selectiva de tareas basada en arquitectura lógica o sistema operativo. | [🚀 Ir](./laboratorios/sesion_04/02-condicionales-when.md) |
-| **03. Loops (Bucles)** | Reducción de código mediante la iteración para crear múltiples usuarios o paquetes. | [🚀 Ir](./laboratorios/sesion_04/03-loops.md) |
-| **04. Templates (Plantillas Jinja2)** | Inyección de variables en archivos de configuración generados dinámicamente. | [🚀 Ir](./laboratorios/sesion_04/04-templates.md) |
+| **01. Facts (Valores descubiertos)** | Recopilación y uso de información intrínseca del sistema operativo destino. | [🚀 Ir](./laboratorios/sesion_04/00-facts.md) |
+| **02. When (Condicionales)** | Ejecución selectiva de tareas basada en arquitectura lógica o sistema operativo. | [🚀 Ir](./laboratorios/sesion_04/01-when.md) |
+| **03. Loops (Bucles)** | Reducción de código mediante la iteración para crear múltiples usuarios o paquetes. | [🚀 Ir](./laboratorios/sesion_04/02-loops.md) |
+| **04. Templates (Plantillas Jinja2)** | Inyección de variables en archivos de configuración generados dinámicamente. | [🚀 Ir](./laboratorios/sesion_04/03-templates.md) |
 
 </details>
 
