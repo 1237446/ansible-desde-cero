@@ -22,8 +22,18 @@ Antes de escribir playbooks, la mejor forma de entender los "Facts" es usando co
 Ejecuta el siguiente comando en tu terminal para consultar a todos los nodos:
 
 ```bash
-ansible all -m setup
+ansible ubuntu-node1 -m setup
+```
 
+```bash
+...
+],
+"ansible_virtualization_type": "docker",
+"discovered_interpreter_python": "/usr/bin/python3",
+"gather_subset": [
+    "all"
+],
+...
 ```
 
 #### Lo que verás:
@@ -163,6 +173,89 @@ La primera tarea (`set_fact`) no hace cambios en el sistema, solo guarda los dat
 
 Aquí es donde ocurre la magia. Vamos a usar un **Fact** que descubrimos en el Ejercicio A (`memtotal_mb`) y el módulo **`set_fact`** para realizar una operación matemática al vuelo: asignarle el 70% de la RAM del servidor a una aplicación Java.
 
+### Preparacion del laboratorio
+
+#### 1. Limpiar las carpetas incorrectas creadas por Docker
+
+Elimina las carpetas que Docker creó por error en el host:
+
+```bash
+sudo rm -rf /var/lib/lxcfs/proc
+```
+
+---
+
+#### 2. Instalar e iniciar el servicio LXCFS en el host
+
+* **Si estás en Ubuntu / Debian:**
+```bash
+sudo apt update
+sudo apt install -y lxcfs
+sudo systemctl enable --now lxcfs
+```
+
+
+* **Si estás en Rocky / RHEL / Fedora:**
+```bash
+sudo dnf install -y epel-release
+sudo dnf install -y lxcfs
+sudo systemctl enable --now lxcfs
+```
+
+---
+
+#### 3. Verificar que LXCFS está montado y activo
+
+Comprueba que los archivos virtuales existen y son legibles:
+
+```bash
+ls -l /var/lib/lxcfs/proc/
+```
+Deberías ver archivos como `meminfo`, `stat`, `cpuinfo`, `uptime`, etc.
+
+---
+
+#### 4. Editar el archivo Docker compose
+
+```yaml
+  ubuntu-node1:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    container_name: ubuntu-node1
+    privileged: true
+    cgroup: host
+    mem_limit: 1024m # Añadir la limitacion de memoria ram
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /var/lib/lxcfs/proc/meminfo:/proc/meminfo:ro   # Añadir
+      - /var/lib/lxcfs/proc/stat:/proc/stat:ro         # Añadir
+      - /var/lib/lxcfs/proc/cpuinfo:/proc/cpuinfo:ro   # Añadir
+    ports:
+      - "8080:80"
+    networks:
+      - lab-net
+```
+
+#### 6. Levantar los contenedores de nuevo
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+Una vez levantados, puedes verificar inmediatamente que `free -m` dentro de cualquier nodo ya refleja el límite configurado:
+
+```bash
+docker exec -it ubuntu-node1 free -m
+```
+
+```bash
+               total        used        free      shared  buff/cache   available
+Mem:            1024          12         997           0          14        1011
+Swap:           1024           0        1024
+```
+
 ### Crea el Playbook (`test-set-fact-dynamic.yml`)
 
 ```yaml
@@ -191,22 +284,39 @@ ansible-playbook test-set-fact-dynamic.yml
 ```
 
 ```bash
-TASK [Gathering Facts] *************************************************************************************************
+PLAY [all] ********************************************************************************
+
+TASK [Gathering Facts] ********************************************************************
+ok: [ubuntu-node2]
 ok: [ubuntu-node1]
 ok: [rocky-node1]
+ok: [rocky-node2]
 
-TASK [Calcular memoria disponible para la JVM (70% del total)] *********************************************************
+TASK [Calcular memoria disponible para la JVM (70% del total)] ****************************
 ok: [ubuntu-node1]
+ok: [ubuntu-node2]
 ok: [rocky-node1]
+ok: [rocky-node2]
 
-TASK [Mostrar el comando de ejecución simulado] ************************************************************************
+TASK [Mostrar el comando de ejecución simulado] *******************************************
 ok: [ubuntu-node1] => {
-    "msg": "Ejecutando en ubuntu-node1: java -Xmx5734m -jar mi_aplicacion.jar"
+    "msg": "Ejecutando en 35658960fa78: java -Xmx716m -jar mi_aplicacion.jar"
+}
+ok: [ubuntu-node2] => {
+    "msg": "Ejecutando en 6e76f998413c: java -Xmx1075m -jar mi_aplicacion.jar"
 }
 ok: [rocky-node1] => {
-    "msg": "Ejecutando en rocky-node1: java -Xmx5734m -jar mi_aplicacion.jar"
+    "msg": "Ejecutando en 27cedb977f26: java -Xmx1433m -jar mi_aplicacion.jar"
+}
+ok: [rocky-node2] => {
+    "msg": "Ejecutando en 1ef2b73cdba6: java -Xmx1792m -jar mi_aplicacion.jar"
 }
 
+PLAY RECAP ********************************************************************************
+rocky-node1                : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+rocky-node2                : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ubuntu-node1               : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ubuntu-node2               : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 ```
 
 #### Lo que verás:
