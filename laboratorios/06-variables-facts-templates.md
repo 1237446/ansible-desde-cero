@@ -1,4 +1,4 @@
-# Laboratorio 05: Variables, Facts y Templates
+# Bonus Track: Levantamiento de una Pagina web Personalizada
 
 ## Objetivo del laboratorio
 
@@ -17,40 +17,46 @@ En este laboratorio crearás un despliegue multiplataforma que utiliza variables
 ## Arquitectura
 
 ```text
-ubuntu1  -> Ubuntu (Debian) -> /var/www/html
-centos1  -> CentOS (RedHat) -> /usr/share/nginx/html
+ubuntu-node1  -> Ubuntu (Debian) -> /var/www/html
+ubuntu-node2  -> Ubuntu (Debian) -> /var/www/html
+rocky-node1  -> Rocky (RedHat) -> /usr/share/nginx/html
+rocky-node2  -> Rocky (RedHat) -> /usr/share/nginx/html
 ```
 
 ## Paso 1: Crear el proyecto
 
 ```bash
 cd ~
-mkdir -p ~/curso-ansible/sesion04
-cd ~/curso-ansible/sesion04
-mkdir -p group_vars host_vars templates
+mkdir -p bonus/inventario/host_vars
+mkdir -p bonus/inventario/group_vars
+mkdir templates
 ```
 
 ## Paso 2: Crear el inventario
 
-Crea `inventory.ini`:
+Crea `inventario.yaml`:
 
-```ini
-[web]
-ubuntu1
-centos1
-
-[ubuntu]
-ubuntu1
-
-[redhat]
-centos1
-
-[linux:children]
-ubuntu
-redhat
-
-[linux:vars]
-ansible_user=ansible
+```yaml
+all:
+  children:
+    webserver:
+      hosts:
+        ubuntu-node1:
+        rocky-node1:
+    ubuntu:
+      hosts:
+        ubuntu-node1:
+        ubuntu-node2:
+    rocky:
+      hosts:
+        rocky-node1:
+        rocky-node2:
+    servers:
+      children:
+        ubuntu:
+        rocky:
+  vars:
+    ansible_become_password: password
 ```
 
 ## Paso 3: Crear ansible.cfg
@@ -59,22 +65,15 @@ Crea `ansible.cfg`:
 
 ```ini
 [defaults]
-inventory = inventory.ini
-host_key_checking = False
-interpreter_python = auto_silent
+inventory = ./inventario.yaml
+remote_user = ansible
+stdout_callback = default
 forks = 5
-retry_files_enabled = False
-private_key_file = ~/.ssh/id_ed25519_pit
-```
 
-Si aún no tienes la llave SSH:
-
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_pit -C "curso-pit" -N ""
-ssh-copy-id -o PubkeyAuthentication=no -o PreferredAuthentications=password \
-  -i ~/.ssh/id_ed25519_pit.pub ansible@ubuntu1
-ssh-copy-id -o PubkeyAuthentication=no -o PreferredAuthentications=password \
-  -i ~/.ssh/id_ed25519_pit.pub ansible@centos1
+[privilege_escalation]
+become = False
+become_method = sudo
+become_user = root
 ```
 
 ## Paso 4: Crear variables de grupo
@@ -91,7 +90,7 @@ common_directories:
   - /opt/pit/logs
 ```
 
-Crea `group_vars/web.yml`:
+Crea `group_vars/webserver.yml`:
 
 ```yaml
 ---
@@ -102,7 +101,7 @@ nginx_service: nginx
 
 ## Paso 5: Crear variables de host
 
-Crea `host_vars/ubuntu1.yml`:
+Crea `host_vars/ubuntu-node1.yml`:
 
 ```yaml
 ---
@@ -111,24 +110,23 @@ site_color: "#2563eb"
 site_message: "Servidor Ubuntu para desarrollo"
 ```
 
-Crea `host_vars/centos1.yml`:
+Crea `host_vars/rocky-node1.yml`:
 
 ```yaml
 ---
 environment_name: produccion
 site_color: "#b91c1c"
-site_message: "Servidor CentOS para produccion"
+site_message: "Servidor RockyOS para produccion"
 ```
 
 ## Paso 6: Inspeccionar variables resueltas
 
 ```bash
-ansible-inventory --host ubuntu1
+ansible-inventory --host ubuntu-node1
 ```
 ```json
 {
     "ansible_become_password": "password",
-    "ansible_user": "ansible",
     "app_name": "Portal PIT",
     "common_directories": [
         "/opt/pit",
@@ -145,12 +143,11 @@ ansible-inventory --host ubuntu1
 }
 ```
 ```bash
-ansible-inventory --host centos1
+ansible-inventory --host rocky-node1
 ```
 ```json
 {
     "ansible_become_password": "password",
-    "ansible_user": "ansible",
     "app_name": "Portal PIT",
     "common_directories": [
         "/opt/pit",
@@ -163,141 +160,33 @@ ansible-inventory --host centos1
     "nginx_service": "nginx",
     "organization_name": "Cursos PIT - OTI",
     "site_color": "#b91c1c",
-    "site_message": "Servidor CentOS para produccion"
+    "site_message": "Servidor RockyOS para produccion"
 }
 ```
 
 Consultar una variable específica:
 
 ```bash
-ansible web -m ansible.builtin.debug -a "var=environment_name"
+ansible webserver -m ansible.builtin.debug -a "var=environment_name"
 ```
 ```json
-ubuntu1 | SUCCESS => {
+ubuntu-node1 | SUCCESS => {
     "environment_name": "desarrollo"
 }
-centos1 | SUCCESS => {
+rocky-node1 | SUCCESS => {
     "environment_name": "produccion"
 }
 ```
 ```bash
-ansible web -m ansible.builtin.debug -a "var=site_color"
+ansible webserver -m ansible.builtin.debug -a "var=site_color"
 ```
 ```json
-ubuntu1 | SUCCESS => {
+ubuntu-node1 | SUCCESS => {
     "site_color": "#2563eb"
 }
-centos1 | SUCCESS => {
+rocky-node1 | SUCCESS => {
     "site_color": "#b91c1c"
 }
-```
-
-Probar un valor temporal:
-
-```bash
-ansible web -m ansible.builtin.debug \
-  -a "var=environment_name" \
-  -e "environment_name=emergencia"
-```
-```json
-ubuntu1 | SUCCESS => {
-    "environment_name": "emergencia"
-}
-centos1 | SUCCESS => {
-    "environment_name": "emergencia"
-}
-```
-
-## Paso 7: Explorar facts
-
-Recopilar todos los facts de un host:
-```bash
-ansible ubuntu1 -m ansible.builtin.setup
-```
-```bash
-ubuntu1 | SUCCESS => {
-    "ansible_facts": {
-        "ansible_all_ipv4_addresses": [
-            "172.18.0.9"
-        ],
-        "ansible_all_ipv6_addresses": [],
-        "ansible_apparmor": {
-            "status": "disabled"
-        },
-...
-```
-
-Filtrar facts específicos:
-```bash
-ansible linux -m ansible.builtin.setup \
-  -a "filter=ansible_distribution*"
-```
-```json
-ubuntu1 | SUCCESS => {
-    "ansible_facts": {
-        "ansible_distribution": "Ubuntu",
-        "ansible_distribution_file_parsed": true,
-        "ansible_distribution_file_path": "/etc/os-release",
-        "ansible_distribution_file_variety": "Debian",
-        "ansible_distribution_major_version": "22",
-        "ansible_distribution_release": "jammy",
-        "ansible_distribution_version": "22.04",
-        "discovered_interpreter_python": "/usr/bin/python3.10"
-    },
-    "changed": false
-}
-centos1 | SUCCESS => {
-    "ansible_facts": {
-        "ansible_distribution": "CentOS",
-        "ansible_distribution_file_parsed": true,
-        "ansible_distribution_file_path": "/etc/centos-release",
-        "ansible_distribution_file_variety": "CentOS",
-        "ansible_distribution_major_version": "9",
-        "ansible_distribution_release": "Stream",
-        "ansible_distribution_version": "9",
-        "discovered_interpreter_python": "/usr/bin/python3.9"
-    },
-    "changed": false
-}
-```
-```bash
-ansible linux -m ansible.builtin.setup \
-  -a "filter=ansible_os_family"
-```
-```json
-ubuntu1 | SUCCESS => {
-    "ansible_facts": {
-        "ansible_os_family": "Debian",
-        "discovered_interpreter_python": "/usr/bin/python3.10"
-    },
-    "changed": false
-}
-centos1 | SUCCESS => {
-    "ansible_facts": {
-        "ansible_os_family": "RedHat",
-        "discovered_interpreter_python": "/usr/bin/python3.9"
-    },
-    "changed": false
-}
-```
-```bash
-ansible linux -m ansible.builtin.setup \
-  -a "filter=ansible_memtotal_mb"
-```
-```json
-ubuntu1 | SUCCESS => {
-    "ansible_facts": {
-        "ansible_memtotal_mb": 3909,
-        "discovered_interpreter_python": "/usr/bin/python3.10"
-    },
-    "changed": false
-}
-centos1 | SUCCESS => {
-    "ansible_facts": {
-        "ansible_memtotal_mb": 3909,
-        "discovered_interpreter_python": "/usr/bin/python3.9"
-    },
-    "changed": false
 ```
 
 ## Paso 8: Crear el template HTML
@@ -373,76 +262,6 @@ server {
 }
 ```
 
-## Paso 10: Crear el playbook de facts
-
-Crea `01-explorar-facts.yml`:
-
-```yaml
----
-- name: Explorar facts de los servidores
-  hosts: linux
-  gather_facts: true
-
-  tasks:
-    - name: Mostrar facts principales
-      ansible.builtin.debug:
-        msg:
-          - "Inventario: {{ inventory_hostname }}"
-          - "Hostname: {{ ansible_hostname }}"
-          - "Distribucion: {{ ansible_distribution }} {{ ansible_distribution_version }}"
-          - "Familia: {{ ansible_os_family }}"
-          - "Arquitectura: {{ ansible_architecture }}"
-          - "CPU virtuales: {{ ansible_processor_vcpus }}"
-          - "Memoria MB: {{ ansible_memtotal_mb }}"
-          - "Variable de host: {{ site_message }}"
-```
-
-Ejecutar:
-
-```bash
-ansible-playbook 01-explorar-facts.yml --syntax-check
-ansible-playbook 01-explorar-facts.yml
-```
-```bash
-PLAY [Explorar facts de los servidores] **************************************************************
-
-TASK [Gathering Facts] *******************************************************************************
-ok: [ubuntu1]
-ok: [centos1]
-
-TASK [Mostrar facts principales] *********************************************************************
-ok: [ubuntu1] => {
-    "msg": [
-        "Inventario: ubuntu1",
-        "Hostname: ubuntu1",
-        "Distribucion: Ubuntu 22.04",
-        "Familia: Debian",
-        "Arquitectura: x86_64",
-        "CPU virtuales: 2",
-        "Memoria MB: 3909",
-        "Variable de host: Servidor Ubuntu para desarrollo"
-    ]
-}
-ok: [centos1] => {
-    "msg": [
-        "Inventario: centos1",
-        "Hostname: centos1",
-        "Distribucion: CentOS 9",
-        "Familia: RedHat",
-        "Arquitectura: x86_64",
-        "CPU virtuales: 2",
-        "Memoria MB: 3909",
-        "Variable de host: Servidor CentOS para produccion"
-    ]
-}
-
-PLAY RECAP *******************************************************************************************
-centos1                    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-ubuntu1                    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-```
-
-Observa cómo cada host muestra valores diferentes según sus facts y variables.
-
 ## Paso 11: Crear el playbook principal
 
 Crea `02-desplegar-sitio.yml`:
@@ -450,7 +269,7 @@ Crea `02-desplegar-sitio.yml`:
 ```yaml
 ---
 - name: Desplegar un sitio dinamico multiplataforma
-  hosts: web
+  hosts: webserver
   become: true
   gather_facts: true
 
