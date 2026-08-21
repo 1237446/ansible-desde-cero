@@ -1,4 +1,4 @@
-# Laboratorio 08: Extendiendo el poder con Ansible Collections (Versión Ampliada)
+# Laboratorio 02: Extendiendo el poder con Ansible Collections
 
 Este laboratorio tiene como objetivo enseñarte qué son las **Ansible Collections** y cómo utilizarlas en profundidad. A medida que Ansible creció, mantener todos los módulos dentro del paquete principal se volvió insostenible. Las colecciones son el formato de distribución moderno que empaqueta módulos, roles y complementos para que puedas instalarlos solo cuando los necesites.
 
