@@ -1,116 +1,211 @@
 ---
+# Laboratorio 01: Ansible Galaxy y Configuración de Nginx
 
-# Laboratorio 09: Gestionando Roles y Dependencias con Ansible Galaxy
-
-Este laboratorio tiene como objetivo principal profundizar en el uso de **Ansible Galaxy**, la herramienta de línea de comandos (y el repositorio oficial en línea) utilizada para compartir y descargar contenido de Ansible.
-
-Aprenderemos a crear la estructura estándar de un Rol desde cero, a gestionar dependencias de forma profesional utilizando un archivo `requirements.yml`, y finalmente, a consumir ese rol externo dentro de un Playbook para aplicarlo a nuestros servidores.
+Este laboratorio tiene como objetivo principal aprender a buscar, instalar y consumir roles de la comunidad utilizando **Ansible Galaxy**. Automatizaremos la instalación y puesta en marcha de un servidor web Nginx en un entorno multiplataforma, aplicando una configuración personalizada y estandarizada mediante variables de rol.
 
 ---
 
 ## 1. Objetivos del Laboratorio
 
-* Comprender el uso de Ansible Galaxy para inicializar la estructura de directorios de un rol local.
-* Aprender a definir dependencias externas (roles de la comunidad) usando un archivo YAML.
-* Descargar e instalar roles de forma automatizada mediante `requirements.yml`.
-* Ejecutar un Playbook corto que abstraiga la complejidad delegando las tareas a un rol externo.
+* Buscar roles comunitarios desde la terminal con `ansible-galaxy`.
+* Gestionar la descarga de roles externos de forma local mediante un archivo `requirements.yml`.
+* Configurar un directorio local para almacenar los roles (`-p roles`).
+* Desarrollar un Playbook que consuma el rol de Nginx y aplique una configuración completa de *Virtual Hosts*.
+* Validar el estado operativo del servicio web (código HTTP `200 OK`) en todos los nodos mediante el módulo `uri`.
 
 ---
 
-## 1. Ejercicio B: Instalación de dependencias con `requirements.yml`
+## 2. Paso 1: Buscar roles comunitarios
 
-En un entorno de trabajo real, tu proyecto dependerá de roles creados por otras personas (por ejemplo, para instalar Nginx o bases de datos). En lugar de instalar cada rol uno por uno manualmente, se utiliza un archivo de manifiesto.
+Ansible Galaxy permite consultar su repositorio público directamente desde la línea de comandos para encontrar soluciones mantenidas por la comunidad.
 
-### Paso 1: Crea el archivo de requisitos (`requirements.yml`)
+Ejecuta la búsqueda para Nginx:
 
-Crea este archivo en tu directorio de trabajo. Aquí especificaremos que necesitamos descargar un rol muy popular de la comunidad para instalar Git.
+```bash
+ansible-galaxy role search nginx
+
+```
+
+---
+
+## 3. Paso 2: Crear el archivo de dependencias (`requirements.yml`)
+
+Para estructurar las dependencias de forma profesional y garantizar la reproducibilidad del entorno, definimos el rol y la versión exacta a utilizar.
+
+Crea el archivo `requirements.yml`:
 
 ```yaml
 ---
 roles:
-  # Nombre del rol en Ansible Galaxy
-  - name: geerlingguy.git
-    version: "2.1.0" # Es una buena práctica fijar la versión
-
-```
-
-### Paso 2: Prueba Práctica y Visual
-
-Dile a Ansible Galaxy que lea ese archivo e instale todo lo que encuentre allí:
-
-```bash
-ansible-galaxy install -r requirements.yml
-
-```
-
-#### Lo que verás:
-
-Ansible Galaxy se conectará a internet, buscará el rol específico, verificará la versión y lo descargará en tu ruta de roles por defecto (usualmente `~/.ansible/roles/`).
-
-```bash
-Starting galaxy role install process
-- downloading role 'git', owned by geerlingguy
-- extracting geerlingguy.git to /home/usuario/.ansible/roles/geerlingguy.git
-- geerlingguy.git (2.1.0) was installed successfully
+  - name: nginx
+    src: geerlingguy.nginx
+    version: "3.2.0"
 
 ```
 
 ---
 
-## 4. Ejercicio C: Consumir el Rol en tu Playbook
+## 4. Paso 3: Instalar el rol localmente
 
-Ahora que descargamos el rol `geerlingguy.git`, vamos a utilizarlo. Una de las mayores ventajas de usar roles de la comunidad es que el autor original ya se encargó de lidiar con las diferencias entre sistemas operativos (Ubuntu con `apt` vs Rocky con `dnf`). Tú solo tienes que llamarlo.
+Descarga el rol indicando una ruta relativa (`roles/`) dentro de tu espacio de trabajo. Esto asegura que el rol quede encapsulado dentro del proyecto.
 
-### Paso 1: Crea el Playbook (`test-role.yml`)
+```bash
+# Descargar e instalar el rol
+ansible-galaxy role install -r requirements.yml -p roles
 
-Crea un archivo nuevo y añade el siguiente código. Nota lo limpio que queda tu Playbook cuando delegas el trabajo a un Rol:
+# Verificar que el rol se encuentre disponible
+ansible-galaxy role list -p roles
+
+```
+
+---
+
+## 5. Paso 4: Crear el Playbook de despliegue (`site-nginx.yml`)
+
+Definimos el Playbook invocando el rol `nginx`. Pasaremos variables para ajustar la capacidad de conexiones simultáneas (`worker_connections`), remover la configuración por defecto y aprovisionar un *Virtual Host* compatible con los distintos sistemas operativos.
+
+Crea el archivo `site-nginx.yml`:
 
 ```yaml
 ---
-- hosts: all
-  become: true # ¡Crucial! Instalar software requiere permisos de administrador (root)
-  gather_facts: true # El rol necesita saber qué SO tiene cada nodo para decidir cómo instalar
+- name: Instalar y configurar Nginx con un rol de Galaxy
+  hosts: linux
+  become: true
 
   roles:
-    - geerlingguy.git
+    - role: nginx
+      vars:
+        nginx_worker_connections: "512"
+        nginx_remove_default_vhost: true
+        nginx_vhosts:
+          - listen: "80 default_server"
+            server_name: "localhost"
+            root: "/usr/share/nginx/html"
+            index: "index.html index.htm"
+            extra_parameters: |
+              location / {
+                  try_files $uri $uri/ =404;
+              }
+
 ```
 
-### Paso 2: Prueba Práctica y Visual
+---
 
-Ejecuta el playbook en tu terminal para aplicar los cambios en tus nodos (Ubuntu y Rocky):
+## 6. Paso 5: Validar sintaxis y ejecutar el Playbook
+
+Primero realizamos una verificación estática de sintaxis y luego procedemos con el despliegue.
 
 ```bash
-ansible-playbook test-role.yml
+# Comprobación de sintaxis
+ansible-playbook -i inventory.ini site-nginx.yml --syntax-check
+
+# Ejecución del Playbook
+ansible-playbook -i inventory.ini site-nginx.yml
+
 ```
 
-#### Lo que verás:
-
-Al ejecutarlo, Ansible automáticamente "desempaqueta" el rol. La salida mostrará el nombre del rol antes de cada tarea:
+### Salida esperada en consola:
 
 ```bash
-PLAY [all] *************************************************************************************************************
+PLAY [Instalar y configurar Nginx con un rol de Galaxy] **********************************************
 
-TASK [Gathering Facts] *************************************************************************************************
-ok: [ubuntu-node1]
-ok: [rocky-node1]
+TASK [Gathering Facts] *******************************************************************************
+ok: [centos1]
+ok: [ubuntu1]
 
-TASK [geerlingguy.git : Ensure git is installed (RedHat).] *************************************************************
-skipping: [ubuntu-node1]
-changed: [rocky-node1]
+TASK [nginx : Include OS-specific variables.] ********************************************************
+ok: [ubuntu1]
+ok: [centos1]
 
-TASK [geerlingguy.git : Ensure git is installed (Debian).] *************************************************************
-changed: [ubuntu-node1]
-skipping: [rocky-node1]
+TASK [nginx : Define nginx_user.] ********************************************************************
+ok: [ubuntu1]
+ok: [centos1]
 
-PLAY RECAP *************************************************************************************************************
-rocky-node1                : ok=2    changed=1    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
-ubuntu-node1               : ok=2    changed=1    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [ubuntu1]
+included: /roles/nginx/tasks/setup-RedHat.yml for centos1
+
+TASK [nginx : Enable nginx repo.] ********************************************************************
+changed: [centos1]
+
+TASK [nginx : Ensure nginx is installed.] ************************************************************
+ok: [centos1]
+
+TASK [nginx : include_tasks] *************************************************************************
+skipping: [centos1]
+included: /roles/nginx/tasks/setup-Debian.yml for ubuntu1
+
+TASK [nginx : Update apt cache.] *********************************************************************
+ok: [ubuntu1]
+
+TASK [nginx : Ensure nginx is installed.] ************************************************************
+ok: [ubuntu1]
+
+TASK [nginx : Ensure nginx_vhost_path exists.] *******************************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+TASK [nginx : Copy nginx configuration in place.] ****************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+TASK [nginx : Ensure nginx service is running as configured.] ****************************************
+ok: [ubuntu1]
+ok: [centos1]
+
+RUNNING HANDLER [nginx : reload nginx] ***************************************************************
+changed: [ubuntu1]
+changed: [centos1]
+
+PLAY RECAP *******************************************************************************************
+centos1                    : ok=11   changed=3    unreachable=0    failed=0    skipped=9    rescued=0    ignored=0
+ubuntu1                    : ok=13   changed=3    unreachable=0    failed=0    skipped=10   rescued=0    ignored=0
+
 ```
 
-#### Análisis del comportamiento:
+---
 
-1. **Abstracción:** Tu playbook solo tiene 5 líneas de código, pero logró instalar Git en arquitecturas completamente distintas.
-2. **Condicionales internos:** El autor del rol incluyó condicionales en sus tareas. La tarea exclusiva para RedHat se ejecutó en tu nodo Rocky, pero fue omitida (`skipping`) en tu nodo Ubuntu, y viceversa.
+## 7. Paso 6: Validar el servicio web
+
+Para verificar que Nginx esté respondiendo adecuadamente en el puerto 80 en cada servidor, ejecuta una consulta HTTP utilizando un comando Ad-Hoc con el módulo `uri`:
+
+```bash
+ansible linux -i inventory.ini -b -m uri \
+  -a "url=http://localhost status_code=200 return_content=false"
+
+```
+
+### Resultado de la verificación:
+
+```json
+ubuntu1 | SUCCESS => {
+    "accept_ranges": "bytes",
+    "changed": false,
+    "connection": "close",
+    "content_length": "612",
+    "content_type": "text/html",
+    "msg": "OK (612 bytes)",
+    "redirected": false,
+    "server": "nginx/1.18.0 (Ubuntu)",
+    "status": 200,
+    "url": "http://localhost"
+}
+centos1 | SUCCESS => {
+    "accept_ranges": "bytes",
+    "changed": false,
+    "connection": "close",
+    "content_length": "612",
+    "content_type": "text/html",
+    "msg": "OK (612 bytes)",
+    "redirected": false,
+    "server": "nginx/1.20.1",
+    "status": 200,
+    "url": "http://localhost"
+}
+
+```
+
+Ambos nodos responderán con el código HTTP `200 OK`, confirmando que el rol desplegó el servicio y aplicó la configuración de manera homogénea en ambas plataformas.Ubuntu, y viceversa.
 3. **Reusabilidad:** Este mismo rol puede ser invocado en docenas de playbooks distintos, manteniendo un único estándar de instalación.
 
 ---
