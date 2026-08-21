@@ -1,364 +1,206 @@
-# Laboratorio 00: Despliegue Estructurado con Ansible Roles y Dependencia de Roles
 
-Este laboratorio marca un salto importante en tu aprendizaje. Dejaremos de usar Playbooks monolíticos y pasaremos a utilizar **Ansible Roles**. Los roles te permiten dividir configuraciones complejas en piezas modulares, reutilizables y altamente estructuradas.
 
-En este ejercicio, crearemos un rol llamado `npm_stack` que desplegará Nginx Proxy Manager junto con su base de datos MariaDB utilizando contenedores Docker.
+# Laboratorio 00: Despliegue Básico con Ansible Roles y Variables
+
+## 1. Objetivos del Laboratorio
+
+* Crear dos roles desde cero usando `ansible-galaxy role init`.
+* Utilizar el archivo `vars/main.yml` de cada rol para definir variables locales.
+* Desplegar un motor de base de datos en servidores Rocky (`dbservers`).
+* Desplegar un servidor web con una página HTML personalizada en servidores Ubuntu (`webservers`).
+* Escribir un Playbook maestro que asigne cada rol a su grupo correspondiente.
 
 ---
 
-## 1. Inicialización con Ansible Galaxy
+## 2. Paso 1: Preparar el Inventario
 
-En lugar de crear carpetas manualmente, usaremos la herramienta oficial para generar el "esqueleto" del rol con todos los archivos necesarios. Abre tu terminal en tu máquina de control y ejecuta:
+Asegúrate de que tu archivo `inventario.yaml` tenga los grupos definidos exactamente como los necesitamos:
+
+```yaml
+all:
+  children:
+    webservers:
+      hosts:
+        ubuntu-node1:
+        ubuntu-node2:
+        ubuntu-node3:
+    dbservers:
+      hosts:
+        rocky-node1:
+        rocky-node2:
+        rocky-node3:
+    servers:
+      children:
+        webservers:
+        dbservers:
+  vars:
+    ansible_become_password: password
+```
+
+---
+
+## 3. Paso 2: Crear la estructura de los Roles
+
+En tu nodo de control, colócate en la carpeta de tu proyecto, crea el directorio `roles` y genera la estructura básica:
 
 ```bash
-# 1. Crea la carpeta de tu proyecto y entra en ella
-mkdir -p proyecto/roles
-cd proyecto/
+mkdir -p roles
+cd roles
 
-# 2. Genera la estructura oficial del rol
-ansible-galaxy role init roles/npm_stack
+ansible-galaxy role init rol_base_datos
+ansible-galaxy role init rol_servidor_web
+
+cd ..
 
 ```
-
-*Galaxy acaba de crear las carpetas `defaults`, `vars`, `tasks`, `handlers`, entre otras, junto con sus respectivos archivos `main.yml` vacíos.*
 
 ---
 
-## 2. Preparación del Entorno (Nodos con Docker-in-Docker / DinD)
+## 4. Paso 3: Configurar el Rol de Base de Datos (Para Rocky)
 
-Dado que tus nodos de Ansible se ejecutarán como contenedores y a su vez alojarán otros contenedores (Nginx Proxy Manager y MariaDB), necesitamos preparar una imagen personalizada y configurar correctamente los privilegios.
+Este rol instalará MariaDB. En lugar de escribir el nombre del paquete directamente en la tarea, lo definiremos como una variable. Esto hace que el rol sea fácil de modificar en el futuro.
 
-### Paso A: Crear el Dockerfile para los nodos (`Dockerfile.ubuntu-dind`)
-
-Crea este archivo en la raíz de tu entorno (donde tienes tu `docker-compose.yml`). Esta imagen instala el servicio de Docker dentro de la imagen base de Ansible:
-
-```dockerfile
-FROM geerlingguy/docker-ubuntu2404-ansible:latest
-
-# Instalar OpenSSH Server, Sudo, Docker y utilidades
-RUN apt-get update && \
-    apt-get install -y openssh-server sudo docker.io containerd iptables && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Crear usuario 'ansible', asignar contraseña y grupos (sudo y docker)
-RUN useradd -m -s /bin/bash -u 1001 ansible && \
-    echo 'ansible:password' | chpasswd && \
-    usermod -aG sudo,docker ansible
-
-# Configurar sudoers sin contraseña para ansible (opcional pero recomendado para automatización)
-RUN echo 'ansible ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-# Preparar directorio .ssh e inyectar la clave pública con permisos estrictos
-RUN mkdir -p /home/ansible/.ssh && \
-    chmod 700 /home/ansible/.ssh
-
-COPY --chown=ansible:ansible id_rsa.pub /home/ansible/.ssh/authorized_keys
-
-RUN chmod 600 /home/ansible/.ssh/authorized_keys && \
-    chown -R ansible:ansible /home/ansible/.ssh
-
-# Configurar runtime de SSH y habilitar servicios en systemd
-RUN mkdir -p /var/run/sshd && \
-    systemctl enable ssh && \
-    systemctl enable docker
-
-EXPOSE 22
-
-CMD ["/lib/systemd/systemd"]
-
-```
-
-### Paso B: Configurar el Docker Compose (En tu máquina host)
-
-Asegúrate de que tu archivo `docker-compose.yml` construya usando el nuevo Dockerfile, declare el nodo con privilegios elevados (`privileged: true`) y mapee los `cgroups`:
-
-```yaml
-  ubuntu-node1:
-    build:
-      context: .
-      dockerfile: Dockerfile.ubuntu-dind
-    container_name: ubuntu-node1
-    privileged: true
-    cgroup: host
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-      - ubuntu-node1-docker:/var/lib/docker
-    ports:
-      - "8080:80"
-      - "8081:81"
-      - "8082:443"
-    networks:
-      - lab-net
-
-volumes:
-  ubuntu-node1-docker:
-
-```
-
-### Paso C: Ajustar el Storage Driver (Dentro del Nodo)
-
-Una vez que levantes tu entorno con `docker compose up -d`, ingresa al nodo. Incluso con el modo privilegiado activo, el driver de almacenamiento `overlay2` anidado puede fallar. Aplica esta solución dentro del contenedor `ubuntu-node1`:
-
-1. Crea o edita el archivo `/etc/docker/daemon.json` en tu nodo de prueba:
-```json
-{
-  "storage-driver": "vfs"
-}
-
-```
-
-
-2. Reinicia el servicio de Docker en el nodo para aplicar el cambio:
-```bash
-sudo systemctl restart docker
-
-```
-
-
-
----
-
-## 3. Variables y Manejadores del Rol (Defaults, Vars, Handlers)
-
-Volviendo a nuestro proyecto de Ansible (`proyecto/`), vamos a editar los archivos que Galaxy generó por nosotros.
-
-**A. Edita `roles/npm_stack/defaults/main.yml` (Variables generales):**
+### A. Define las variables en `roles/rol_base_datos/vars/main.yml`
 
 ```yaml
 ---
-npm_docker_network: "npm_network"
-mariadb_container_name: "npm_db"
-mariadb_image: "mariadb:11.4"
-mariadb_data_dir: "/opt/npm/db"
-mariadb_database: "npm"
-mariadb_user: "npm"
-npm_container_name: "nginx_proxy_manager"
-npm_image: "jc21/nginx-proxy-manager:latest"
-npm_data_dir: "/opt/npm/data"
-npm_letsencrypt_dir: "/opt/npm/letsencrypt"
+# Variables locales para el rol de base de datos
+db_paquete: "mariadb-server"
+db_servicio: "mariadb"
 
 ```
 
-**B. Edita `roles/npm_stack/vars/main.yml` (Secretos y constantes):**
+### B. Escribe las tareas en `roles/rol_base_datos/tasks/main.yml`
 
 ```yaml
 ---
-mariadb_root_password: "RootAdminPassword123"
-mariadb_password: "NpmAppPassword456"
-container_restart_policy: "unless-stopped"
+- name: Instalar el motor de base de datos
+  ansible.builtin.dnf:
+    name: "{{ db_paquete }}"
+    state: present
 
-```
-
-**C. Edita `roles/npm_stack/handlers/main.yml` (Reinicio de servicios):**
-
-```yaml
----
-- name: Reiniciar MariaDB
-  community.docker.docker_container:
-    name: "{{ mariadb_container_name }}"
+- name: Iniciar y habilitar el servicio de base de datos
+  ansible.builtin.service:
+    name: "{{ db_servicio }}"
     state: started
-    restart: true
-
-- name: Reiniciar NPM
-  community.docker.docker_container:
-    name: "{{ npm_container_name }}"
-    state: started
-    restart: true
+    enabled: true
 
 ```
 
 ---
 
-## 4. Tareas Principales del Rol (Tasks)
+## 5. Paso 4: Configurar el Rol del Servidor Web (Para Ubuntu)
 
-Este archivo dictará el orden exacto del despliegue en tus nodos.
+Este rol instalará Nginx y utilizará variables para inyectar texto personalizado en una página web mediante una plantilla Jinja2.
 
-**Edita `roles/npm_stack/tasks/main.yml`:**
+### A. Define las variables en `roles/rol_servidor_web/vars/main.yml`
 
 ```yaml
 ---
-- name: Instalar dependencias de Python para Docker
+# Variables locales para el rol web
+web_paquete: "nginx"
+web_servicio: "nginx"
+pagina_titulo: "Bienvenidos a mi Servidor Automatizado"
+pagina_mensaje: "Este sitio web fue desplegado de forma exitosa utilizando Ansible Roles y Variables simples."
+
+```
+
+### B. Escribe las tareas en `roles/rol_servidor_web/tasks/main.yml`
+
+```yaml
+---
+- name: Instalar el servidor web
   ansible.builtin.apt:
-    name: [python3-requests, python3-docker]
+    name: "{{ web_paquete }}"
     state: present
-    update_cache: true
+    update_cache: yes
 
-- name: Crear directorios para persistencia de datos
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: "0755"
-  loop:
-    - "{{ mariadb_data_dir }}"
-    - "{{ npm_data_dir }}"
-    - "{{ npm_letsencrypt_dir }}"
-
-- name: Crear red bridge para NPM
-  community.docker.docker_network:
-    name: "{{ npm_docker_network }}"
-    state: present
-
-- name: Desplegar contenedor MariaDB
-  community.docker.docker_container:
-    name: "{{ mariadb_container_name }}"
-    image: "{{ mariadb_image }}"
+- name: Iniciar y habilitar el servicio web
+  ansible.builtin.service:
+    name: "{{ web_servicio }}"
     state: started
-    restart_policy: "{{ container_restart_policy }}"
-    networks: [{ name: "{{ npm_docker_network }}" }]
-    volumes: ["{{ mariadb_data_dir }}:/var/lib/mysql"]
-    env:
-      MYSQL_ROOT_PASSWORD: "{{ mariadb_root_password }}"
-      MYSQL_DATABASE: "{{ mariadb_database }}"
-      MYSQL_USER: "{{ mariadb_user }}"
-      MYSQL_PASSWORD: "{{ mariadb_password }}"
-  notify: Reiniciar MariaDB
+    enabled: true
 
-- name: Desplegar contenedor Nginx Proxy Manager
-  community.docker.docker_container:
-    name: "{{ npm_container_name }}"
-    image: "{{ npm_image }}"
-    state: started
-    restart_policy: "{{ container_restart_policy }}"
-    networks: [{ name: "{{ npm_docker_network }}" }]
-    ports: ["80:80", "81:81", "443:443"]
-    volumes:
-      - "{{ npm_data_dir }}:/data"
-      - "{{ npm_letsencrypt_dir }}:/etc/letsencrypt"
-    env:
-      DB_MYSQL_HOST: "{{ mariadb_container_name }}"
-      DB_MYSQL_PORT: "3306"
-      DB_MYSQL_USER: "{{ mariadb_user }}"
-      DB_MYSQL_PASSWORD: "{{ mariadb_password }}"
-      DB_MYSQL_NAME: "{{ mariadb_database }}"
-  notify: Reiniciar NPM
+- name: Desplegar la pagina web personalizada
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+
+```
+
+### C. Crea la plantilla en `roles/rol_servidor_web/templates/index.html.j2`
+
+*(Si la carpeta `templates` no existe dentro de tu rol, créala).*
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ pagina_titulo }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        h1 { color: #2c3e50; }
+        p { color: #34495e; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>{{ pagina_titulo }}</h1>
+    <p>{{ pagina_mensaje }}</p>
+    <hr>
+    <p><i>Atendido por el servidor: {{ ansible_facts['hostname'] }}</i></p>
+</body>
+</html>
 
 ```
 
 ---
 
-## 5. Archivos Raíz y Ejecución
+## 6. Paso 5: El Playbook Maestro (`site.yml`)
 
-Sube a la raíz del proyecto (`proyecto/`) y crea los dos archivos finales que llamarán a tu rol.
+Ahora, en la raíz de tu proyecto (fuera de la carpeta `roles`), crea tu playbook principal. Fíjate en lo fácil que es leerlo ahora que toda la complejidad está encapsulada en los roles.
 
-* **Archivo `site.yml`:**
 ```yaml
 ---
-- hosts: ubuntu
+# Tareas para los servidores Rocky
+- name: Configurar Servidores de Base de Datos
+  hosts: dbservers
   become: true
   roles:
-    - role: npm_stack
-```
+    - rol_base_datos
 
-# Dependencia de Roles
-
-Este laboratorio es muy corto y tiene un único objetivo: demostrar cómo puedes hacer que un Rol necesite de otro Rol para funcionar.
-
-En la vida real, esto es útil cuando tienes un rol complejo (como instalar un sitio web) que siempre requiere que primero se ejecute un rol básico (como instalar un firewall o un usuario administrador). En lugar de acordarte de poner ambos en tu Playbook, Ansible lo hace por ti a través del archivo `meta/main.yml`.
-
-Para mantenerlo súper simple y a prueba de errores, usaremos el módulo `debug` para simular las acciones.
-
-## 1. Creación de la Estructura
-
-En tu máquina de control (dentro de tu carpeta `proyecto/`), genera los dos roles: el rol "padre" (la aplicación) y el rol "hijo" (la base necesaria).
-
-```bash
-# Crea la estructura para ambos roles
-ansible-galaxy role init roles/rol_base
-ansible-galaxy role init roles/rol_app
-
-```
-
----
-
-## 2. Configurar el Rol "Base" (El hijo)
-
-Este rol simulará la preparación del servidor.
-
-**Edita `roles/rol_base/tasks/main.yml`:**
-
-```yaml
----
-- name: Tarea del Rol Base
-  ansible.builtin.debug:
-    msg: "[PASO 1] Ejecutando el rol base: Preparando el servidor..."
-
-```
-
----
-
-## 3. Configurar el Rol "App" (El padre)
-
-Aquí es donde ocurre la magia. Primero, le diremos a este rol que **depende** del `rol_base`.
-
-**A. Edita `roles/rol_app/meta/main.yml`:**
-Busca al final del archivo la sección `dependencies: []` y modifícala para que quede así:
-
-```yaml
----
-dependencies:
-  - role: rol_base
-
-```
-
-**B. Edita `roles/rol_app/tasks/main.yml`:**
-
-```yaml
----
-- name: Tarea del Rol App
-  ansible.builtin.debug:
-    msg: "[PASO 2] Ejecutando el rol app: Instalando la aplicacion final..."
-
-```
-
----
-
-## 4. El Playbook Principal (`site.yml`)
-
-Sube a la raíz de tu proyecto y edita tu archivo `site.yml`. Presta mucha atención: **solo vamos a invocar al `rol_app**`.
-
-```yaml
----
-- hosts: ubuntu-node1
-  gather_facts: false
+# Tareas para los servidores Ubuntu
+- name: Configurar Servidores Web
+  hosts: webservers
+  become: true
   roles:
-    - role: rol_app
+    - rol_servidor_web
 
 ```
 
 ---
 
-## 5. Prueba Práctica y Visual
+## 7. Ejecución y Validación
 
-Ejecuta tu playbook apuntando a tu inventario (o a cualquier servidor de prueba que tengas configurado):
+**1. Ejecuta el Playbook Maestro:**
 
 ```bash
 ansible-playbook site.yml
 
 ```
 
-### Lo que verás en la consola:
+**2. Verifica el servidor de Base de Datos:**
+Puedes lanzar un comando Ad-Hoc para asegurarte de que MariaDB está corriendo en tu nodo Rocky:
 
 ```bash
-PLAY [all] *************************************************************************************************************
-
-TASK [rol_base : Tarea del Rol Base] ***********************************************************************************
-ok: [ubuntu-node1] => {
-    "msg": "[PASO 1] Ejecutando el rol base: Preparando el servidor..."
-}
-
-TASK [rol_app : Tarea del Rol App] *************************************************************************************
-ok: [ubuntu-node1] => {
-    "msg": "[PASO 2] Ejecutando el rol app: Instalando la aplicacion final..."
-}
-
-PLAY RECAP *************************************************************************************************************
-ubuntu-node1               : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+ansible dbservers -b -m command -a "systemctl status mariadb"
 
 ```
 
-### Análisis:
+**3. Verifica el Servidor Web:**
+Abre tu navegador y visita la IP de tu nodo Ubuntu (ej. `[http://192.168.1.10](http://192.168.1.10)`), o usa `curl` desde la terminal de tu nodo de control:
 
-Aunque en tu `site.yml` tú solo escribiste `- role: rol_app`, Ansible leyó la carpeta `meta/main.yml` de ese rol, detectó que dependía de `rol_base`, y automáticamente detuvo la ejecución, buscó el rol base, lo ejecutó primero, y luego continuó con el rol de la aplicación.
+```bash
+curl http://192.168.1.10
+```
 
-Esta es la forma correcta de modularizar infraestructura compleja sin ensuciar tus Playbooks principales.
+Verás el código HTML con el título y el mensaje que definiste en las variables de tu rol, junto con el nombre del servidor (hostname) inyectado automáticamente.
