@@ -1,4 +1,4 @@
-# Laboratorio 08: Despliegue Estructurado con Ansible Roles (Nginx Proxy Manager)
+# Laboratorio 00: Despliegue Estructurado con Ansible Roles y Dependencia de Roles
 
 Este laboratorio marca un salto importante en tu aprendizaje. Dejaremos de usar Playbooks monolíticos y pasaremos a utilizar **Ansible Roles**. Los roles te permiten dividir configuraciones complejas en piezas modulares, reutilizables y altamente estructuradas.
 
@@ -86,8 +86,13 @@ Asegúrate de que tu archivo `docker-compose.yml` construya usando el nuevo Dock
       - ubuntu-node1-docker:/var/lib/docker
     ports:
       - "8080:80"
+      - "8081:81"
+      - "8082:443"
     networks:
       - lab-net
+
+volumes:
+  ubuntu-node1-docker:
 
 ```
 
@@ -245,9 +250,115 @@ Sube a la raíz del proyecto (`proyecto/`) y crea los dos archivos finales que l
     - role: npm_stack
 ```
 
-**Ejecución Final:**
-Lanza el despliegue integrado con el siguiente comando:
+# Dependencia de Roles
+
+Este laboratorio es muy corto y tiene un único objetivo: demostrar cómo puedes hacer que un Rol necesite de otro Rol para funcionar.
+
+En la vida real, esto es útil cuando tienes un rol complejo (como instalar un sitio web) que siempre requiere que primero se ejecute un rol básico (como instalar un firewall o un usuario administrador). En lugar de acordarte de poner ambos en tu Playbook, Ansible lo hace por ti a través del archivo `meta/main.yml`.
+
+Para mantenerlo súper simple y a prueba de errores, usaremos el módulo `debug` para simular las acciones.
+
+## 1. Creación de la Estructura
+
+En tu máquina de control (dentro de tu carpeta `proyecto/`), genera los dos roles: el rol "padre" (la aplicación) y el rol "hijo" (la base necesaria).
 
 ```bash
-ansible-playbook -i inventory.ini site.yml
+# Crea la estructura para ambos roles
+ansible-galaxy role init roles/rol_base
+ansible-galaxy role init roles/rol_app
+
 ```
+
+---
+
+## 2. Configurar el Rol "Base" (El hijo)
+
+Este rol simulará la preparación del servidor.
+
+**Edita `roles/rol_base/tasks/main.yml`:**
+
+```yaml
+---
+- name: Tarea del Rol Base
+  ansible.builtin.debug:
+    msg: "[PASO 1] Ejecutando el rol base: Preparando el servidor..."
+
+```
+
+---
+
+## 3. Configurar el Rol "App" (El padre)
+
+Aquí es donde ocurre la magia. Primero, le diremos a este rol que **depende** del `rol_base`.
+
+**A. Edita `roles/rol_app/meta/main.yml`:**
+Busca al final del archivo la sección `dependencies: []` y modifícala para que quede así:
+
+```yaml
+---
+dependencies:
+  - role: rol_base
+
+```
+
+**B. Edita `roles/rol_app/tasks/main.yml`:**
+
+```yaml
+---
+- name: Tarea del Rol App
+  ansible.builtin.debug:
+    msg: "[PASO 2] Ejecutando el rol app: Instalando la aplicacion final..."
+
+```
+
+---
+
+## 4. El Playbook Principal (`site.yml`)
+
+Sube a la raíz de tu proyecto y edita tu archivo `site.yml`. Presta mucha atención: **solo vamos a invocar al `rol_app**`.
+
+```yaml
+---
+- hosts: ubuntu-node1
+  gather_facts: false
+  roles:
+    - role: rol_app
+
+```
+
+---
+
+## 5. Prueba Práctica y Visual
+
+Ejecuta tu playbook apuntando a tu inventario (o a cualquier servidor de prueba que tengas configurado):
+
+```bash
+ansible-playbook site.yml
+
+```
+
+### Lo que verás en la consola:
+
+```bash
+PLAY [all] *************************************************************************************************************
+
+TASK [rol_base : Tarea del Rol Base] ***********************************************************************************
+ok: [ubuntu-node1] => {
+    "msg": "[PASO 1] Ejecutando el rol base: Preparando el servidor..."
+}
+
+TASK [rol_app : Tarea del Rol App] *************************************************************************************
+ok: [ubuntu-node1] => {
+    "msg": "[PASO 2] Ejecutando el rol app: Instalando la aplicacion final..."
+}
+
+PLAY RECAP *************************************************************************************************************
+ubuntu-node1               : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+```
+
+### Análisis:
+
+Aunque en tu `site.yml` tú solo escribiste `- role: rol_app`, Ansible leyó la carpeta `meta/main.yml` de ese rol, detectó que dependía de `rol_base`, y automáticamente detuvo la ejecución, buscó el rol base, lo ejecutó primero, y luego continuó con el rol de la aplicación.
+
+Esta es la forma correcta de modularizar infraestructura compleja sin ensuciar tus Playbooks principales.
