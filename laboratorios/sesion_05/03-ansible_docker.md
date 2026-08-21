@@ -1,6 +1,6 @@
 ---
 
-# Laboratorio 12: Gestión del Ciclo de Vida de Docker con Ansible
+# Laboratorio 3: Gestión del Ciclo de Vida de Docker con Ansible
 
 Este laboratorio asume que estás trabajando en un entorno moderno (como contenedores DinD con `systemd`) donde el motor de Docker ya está instalado y corriendo. Por lo tanto, nos enfocaremos estrictamente en la **gestión operativa**: solucionar problemas de compatibilidad del motor, utilizar Ansible para hablar con la API de Docker, crear contenedores, persistir datos con volúmenes y orquestar stacks completos con Docker Compose.
 
@@ -93,18 +93,11 @@ El módulo `docker_container` reemplaza la necesidad de escribir largos comandos
   gather_facts: true
 
   tasks:
-    - name: Paso 1A - Instalar SDK de Python para Docker (Ubuntu/Debian)
+    - name: Paso 1 - Instalar SDK de Python para Docker (Ubuntu/Debian)
       ansible.builtin.apt:
         name: python3-docker
         state: present
         update_cache: yes
-      when: ansible_facts['os_family'] == 'Debian'
-
-    - name: Paso 1B - Instalar SDK de Python para Docker (Rocky/RedHat)
-      ansible.builtin.dnf:
-        name: python3-docker
-        state: present
-      when: ansible_facts['os_family'] == 'RedHat'
 
     - name: Paso 2 - Levantar un contenedor web Nginx
       community.docker.docker_container:
@@ -162,6 +155,11 @@ Ejecuta `ansible-playbook test-docker-volume.yml`. Conéctate por SSH a tu nodo 
 ## 5. Ejercicio D: Orquestación con Docker Compose
 
 Para proyectos de múltiples componentes, lo ideal es transferir un archivo `docker-compose.yml`. Ansible copiará la configuración al nodo y usará el plugin interno de Compose para levantarlo.
+
+### Instalacion del plugin Docker Compose
+```
+ansible all -i -m apt -a "name=docker-compose-v2 state=present update_cache=yes" -b
+```
 
 ### Crea el Playbook (`test-docker-compose.yml`)
 
