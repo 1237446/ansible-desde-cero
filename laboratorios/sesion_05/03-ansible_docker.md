@@ -73,7 +73,8 @@ A veces, al interactuar con Docker, falla con el error `overlay ... invalid argu
 
 ```
 
-> **Nota de Producción:** El driver `vfs` funciona para salir del paso en laboratorios, pero penaliza el rendimiento y el consumo de disco. En producción real, lo recomendable es utilizar `overlay2` sobre un host totalmente compatible.
+> [\!TIP]
+> El driver `vfs` funciona para salir del paso en laboratorios, pero penaliza el rendimiento y el consumo de disco. En producción real, lo recomendable es utilizar `overlay2` sobre un host totalmente compatible.
 
 ### Prueba Práctica
 
@@ -236,5 +237,3 @@ En Ansible, no tienes que usar comandos explícitos de borrado. Simplemente camb
 
 Ejecuta `ansible-playbook test-docker-clean.yml`. Verás en tu consola cómo Ansible destruye sistemáticamente uno por uno los recursos creados en los ejercicios B, C y D, dejando tu motor de Docker completamente limpio.
 **Ejecución:** Ejecuta `ansible-playbook test-docker-clean.yml`. Ansible enviará las señales de parada (`SIGTERM`), destruirá los contenedores especificados y dejará tu entorno limpio.
-
-¿Te gustaría que diseñemos un ejercicio extra donde usemos el módulo de Ansible para recolectar información (inspeccionar) de un contenedor en ejecución y mostrar su IP interna en la pantalla?
