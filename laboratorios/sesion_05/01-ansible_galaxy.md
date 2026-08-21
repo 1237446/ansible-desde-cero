@@ -69,7 +69,7 @@ Crea el archivo `site-nginx.yml`:
 ```yaml
 ---
 - name: Instalar y configurar Nginx con un rol de Galaxy
-  hosts: linux
+  hosts: ubuntu
   become: true
 
   roles:
@@ -97,70 +97,141 @@ Primero realizamos una verificación estática de sintaxis y luego procedemos co
 
 ```bash
 # Comprobación de sintaxis
-ansible-playbook -i inventory.ini site-nginx.yml --syntax-check
+ansible-playbook site-nginx.yml --syntax-check
 
 # Ejecución del Playbook
-ansible-playbook -i inventory.ini site-nginx.yml
+ansible-playbook site-nginx.yml
 
 ```
 
 ### Salida esperada en consola:
 
 ```bash
-PLAY [Instalar y configurar Nginx con un rol de Galaxy] **********************************************
+PLAY [Instalar y configurar Nginx con un rol de Galaxy] ****************************
 
-TASK [Gathering Facts] *******************************************************************************
-ok: [centos1]
-ok: [ubuntu1]
+TASK [Gathering Facts] *************************************************************
+ok: [ubuntu-node3]
+ok: [ubuntu-node1]
+ok: [ubuntu-node2]
 
-TASK [nginx : Include OS-specific variables.] ********************************************************
-ok: [ubuntu1]
-ok: [centos1]
+TASK [nginx : Include OS-specific variables.] **************************************
+ok: [ubuntu-node1]
+ok: [ubuntu-node2]
+ok: [ubuntu-node3]
 
-TASK [nginx : Define nginx_user.] ********************************************************************
-ok: [ubuntu1]
-ok: [centos1]
+TASK [nginx : Define nginx_user.] **************************************************
+ok: [ubuntu-node1]
+ok: [ubuntu-node2]
+ok: [ubuntu-node3]
 
-TASK [nginx : include_tasks] *************************************************************************
-skipping: [ubuntu1]
-included: /roles/nginx/tasks/setup-RedHat.yml for centos1
+TASK [nginx : include_tasks] *******************************************************
+skipping: [ubuntu-node1]
+skipping: [ubuntu-node2]
+skipping: [ubuntu-node3]
 
-TASK [nginx : Enable nginx repo.] ********************************************************************
-changed: [centos1]
+TASK [nginx : include_tasks] *******************************************************
+included: /config/workspace/roles/nginx/tasks/setup-Ubuntu.yml for ubuntu-node1, ubuntu-node2, ubuntu-node3
 
-TASK [nginx : Ensure nginx is installed.] ************************************************************
-ok: [centos1]
+TASK [nginx : Ensure dirmngr is installed (gnupg dependency).] *********************
+changed: [ubuntu-node3]
+changed: [ubuntu-node1]
+changed: [ubuntu-node2]
 
-TASK [nginx : include_tasks] *************************************************************************
-skipping: [centos1]
-included: /roles/nginx/tasks/setup-Debian.yml for ubuntu1
+TASK [nginx : Add PPA for Nginx (if configured).] **********************************
+skipping: [ubuntu-node1]
+skipping: [ubuntu-node2]
+skipping: [ubuntu-node3]
 
-TASK [nginx : Update apt cache.] *********************************************************************
-ok: [ubuntu1]
+TASK [nginx : Ensure nginx will reinstall if the PPA was just added.] **************
+skipping: [ubuntu-node1]
+skipping: [ubuntu-node2]
+skipping: [ubuntu-node3]
 
-TASK [nginx : Ensure nginx is installed.] ************************************************************
-ok: [ubuntu1]
+TASK [nginx : include_tasks] *******************************************************
+included: /config/workspace/roles/nginx/tasks/setup-Debian.yml for ubuntu-node1, ubuntu-node2, ubuntu-node3
 
-TASK [nginx : Ensure nginx_vhost_path exists.] *******************************************************
-ok: [ubuntu1]
-ok: [centos1]
+TASK [nginx : Update apt cache.] ***************************************************
+ok: [ubuntu-node3]
+ok: [ubuntu-node2]
+ok: [ubuntu-node1]
 
-TASK [nginx : Copy nginx configuration in place.] ****************************************************
-changed: [ubuntu1]
-changed: [centos1]
+TASK [nginx : Ensure nginx is installed.] ******************************************
+changed: [ubuntu-node2]
+changed: [ubuntu-node3]
+changed: [ubuntu-node1]
 
-TASK [nginx : Ensure nginx service is running as configured.] ****************************************
-ok: [ubuntu1]
-ok: [centos1]
+TASK [nginx : include_tasks] *******************************************************
+skipping: [ubuntu-node1]
+skipping: [ubuntu-node2]
+skipping: [ubuntu-node3]
 
-RUNNING HANDLER [nginx : reload nginx] ***************************************************************
-changed: [ubuntu1]
-changed: [centos1]
+TASK [nginx : include_tasks] *******************************************************
+skipping: [ubuntu-node1]
+skipping: [ubuntu-node2]
+skipping: [ubuntu-node3]
 
-PLAY RECAP *******************************************************************************************
-centos1                    : ok=11   changed=3    unreachable=0    failed=0    skipped=9    rescued=0    ignored=0
-ubuntu1                    : ok=13   changed=3    unreachable=0    failed=0    skipped=10   rescued=0    ignored=0
+TASK [nginx : include_tasks] *******************************************************
+skipping: [ubuntu-node1]
+skipping: [ubuntu-node2]
+skipping: [ubuntu-node3]
 
+TASK [nginx : include_tasks] *******************************************************
+skipping: [ubuntu-node1]
+skipping: [ubuntu-node2]
+skipping: [ubuntu-node3]
+
+TASK [nginx : Remove default nginx vhost config file (if configured).] *************
+changed: [ubuntu-node1]
+changed: [ubuntu-node2]
+changed: [ubuntu-node3]
+
+TASK [nginx : Ensure nginx_vhost_path exists.] *************************************
+ok: [ubuntu-node1]
+ok: [ubuntu-node2]
+ok: [ubuntu-node3]
+
+TASK [nginx : Add managed vhost config files.] *************************************
+changed: [ubuntu-node2] => (item={'listen': '80 default_server', 'server_name': 'localhost', 'root': '/usr/share/nginx/html', 'index': 'index.html index.htm', 'extra_parameters': 'location / {\n    try_files $uri $uri/ =404;\n}\n'})
+changed: [ubuntu-node1] => (item={'listen': '80 default_server', 'server_name': 'localhost', 'root': '/usr/share/nginx/html', 'index': 'index.html index.htm', 'extra_parameters': 'location / {\n    try_files $uri $uri/ =404;\n}\n'})
+changed: [ubuntu-node3] => (item={'listen': '80 default_server', 'server_name': 'localhost', 'root': '/usr/share/nginx/html', 'index': 'index.html index.htm', 'extra_parameters': 'location / {\n    try_files $uri $uri/ =404;\n}\n'})
+
+TASK [nginx : Remove managed vhost config files.] **********************************
+skipping: [ubuntu-node1] => (item={'listen': '80 default_server', 'server_name': 'localhost', 'root': '/usr/share/nginx/html', 'index': 'index.html index.htm', 'extra_parameters': 'location / {\n    try_files $uri $uri/ =404;\n}\n'}) 
+skipping: [ubuntu-node1]
+skipping: [ubuntu-node2] => (item={'listen': '80 default_server', 'server_name': 'localhost', 'root': '/usr/share/nginx/html', 'index': 'index.html index.htm', 'extra_parameters': 'location / {\n    try_files $uri $uri/ =404;\n}\n'}) 
+skipping: [ubuntu-node2]
+skipping: [ubuntu-node3] => (item={'listen': '80 default_server', 'server_name': 'localhost', 'root': '/usr/share/nginx/html', 'index': 'index.html index.htm', 'extra_parameters': 'location / {\n    try_files $uri $uri/ =404;\n}\n'}) 
+skipping: [ubuntu-node3]
+
+TASK [nginx : Remove legacy vhosts.conf file.] *************************************
+ok: [ubuntu-node1]
+ok: [ubuntu-node2]
+ok: [ubuntu-node3]
+
+TASK [nginx : Copy nginx configuration in place.] **********************************
+changed: [ubuntu-node2]
+changed: [ubuntu-node1]
+changed: [ubuntu-node3]
+
+TASK [nginx : Ensure nginx service is running as configured.] **********************
+changed: [ubuntu-node1]
+changed: [ubuntu-node3]
+changed: [ubuntu-node2]
+
+RUNNING HANDLER [nginx : restart nginx] ********************************************
+changed: [ubuntu-node3]
+changed: [ubuntu-node2]
+changed: [ubuntu-node1]
+
+RUNNING HANDLER [nginx : reload nginx] *********************************************
+changed: [ubuntu-node1]
+changed: [ubuntu-node2]
+changed: [ubuntu-node3]
+
+PLAY RECAP *************************************************************************
+ubuntu-node1               : ok=16   changed=8    unreachable=0    failed=0    skipped=8    rescued=0    ignored=0   
+ubuntu-node2               : ok=16   changed=8    unreachable=0    failed=0    skipped=8    rescued=0    ignored=0   
+ubuntu-node3               : ok=16   changed=8    unreachable=0    failed=0    skipped=8    rescued=0    ignored=0   
 ```
 
 ---
@@ -170,7 +241,7 @@ ubuntu1                    : ok=13   changed=3    unreachable=0    failed=0    s
 Para verificar que Nginx esté respondiendo adecuadamente en el puerto 80 en cada servidor, ejecuta una consulta HTTP utilizando un comando Ad-Hoc con el módulo `uri`:
 
 ```bash
-ansible linux -i inventory.ini -b -m uri \
+ansible linux -b -m uri \
   -a "url=http://localhost status_code=200 return_content=false"
 
 ```
@@ -178,31 +249,69 @@ ansible linux -i inventory.ini -b -m uri \
 ### Resultado de la verificación:
 
 ```json
-ubuntu1 | SUCCESS => {
+ubuntu-node2 | SUCCESS => {
     "accept_ranges": "bytes",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
     "changed": false,
     "connection": "close",
-    "content_length": "612",
+    "content_length": "615",
     "content_type": "text/html",
-    "msg": "OK (612 bytes)",
+    "cookies": {},
+    "cookies_string": "",
+    "date": "Fri, 21 Aug 2026 18:58:12 GMT",
+    "elapsed": 0,
+    "etag": "\"6434bbbe-267\"",
+    "last_modified": "Tue, 11 Apr 2023 01:45:34 GMT",
+    "msg": "OK (615 bytes)",
     "redirected": false,
-    "server": "nginx/1.18.0 (Ubuntu)",
+    "server": "nginx/1.24.0 (Ubuntu)",
     "status": 200,
     "url": "http://localhost"
 }
-centos1 | SUCCESS => {
+ubuntu-node1 | SUCCESS => {
     "accept_ranges": "bytes",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
     "changed": false,
     "connection": "close",
-    "content_length": "612",
+    "content_length": "615",
     "content_type": "text/html",
-    "msg": "OK (612 bytes)",
+    "cookies": {},
+    "cookies_string": "",
+    "date": "Fri, 21 Aug 2026 18:58:12 GMT",
+    "elapsed": 0,
+    "etag": "\"6434bbbe-267\"",
+    "last_modified": "Tue, 11 Apr 2023 01:45:34 GMT",
+    "msg": "OK (615 bytes)",
     "redirected": false,
-    "server": "nginx/1.20.1",
+    "server": "nginx/1.24.0 (Ubuntu)",
     "status": 200,
     "url": "http://localhost"
 }
-
+ubuntu-node3 | SUCCESS => {
+    "accept_ranges": "bytes",
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "connection": "close",
+    "content_length": "615",
+    "content_type": "text/html",
+    "cookies": {},
+    "cookies_string": "",
+    "date": "Fri, 21 Aug 2026 18:58:12 GMT",
+    "elapsed": 0,
+    "etag": "\"6434bbbe-267\"",
+    "last_modified": "Tue, 11 Apr 2023 01:45:34 GMT",
+    "msg": "OK (615 bytes)",
+    "redirected": false,
+    "server": "nginx/1.24.0 (Ubuntu)",
+    "status": 200,
+    "url": "http://localhost"
+}
 ```
 
 Ambos nodos responderán con el código HTTP `200 OK`, confirmando que el rol desplegó el servicio y aplicó la configuración de manera homogénea en ambas plataformas.Ubuntu, y viceversa.
