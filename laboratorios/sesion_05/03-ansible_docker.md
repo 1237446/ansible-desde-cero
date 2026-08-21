@@ -20,7 +20,109 @@ Este laboratorio asume que estás trabajando en un entorno moderno (como contene
 
 ---
 
-## 2. Ejercicio A: Troubleshooting de Storage Drivers (*Workaround*)
+
+
+## 2. Preparación del Entorno (Nodos con Docker-in-Docker / DinD)
+
+Dado que tus nodos de Ansible se ejecutarán como contenedores y a su vez alojarán otros contenedores (Nginx Proxy Manager y MariaDB), necesitamos preparar una imagen personalizada y configurar correctamente los privilegios.
+
+### Paso A: Crear el Dockerfile para los nodos (`Dockerfile.ubuntu-dind`)
+
+Crea este archivo en la raíz de tu entorno (donde tienes tu `docker-compose.yml`). Esta imagen instala el servicio de Docker dentro de la imagen base de Ansible:
+
+```dockerfile
+FROM geerlingguy/docker-ubuntu2404-ansible:latest
+
+# Instalar OpenSSH Server, Sudo, Docker y utilidades
+RUN apt-get update && \
+    apt-get install -y openssh-server sudo docker.io containerd iptables && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Crear usuario 'ansible', asignar contraseña y grupos (sudo y docker)
+RUN useradd -m -s /bin/bash -u 1001 ansible && \
+    echo 'ansible:password' | chpasswd && \
+    usermod -aG sudo,docker ansible
+
+# Configurar sudoers sin contraseña para ansible (opcional pero recomendado para automatización)
+RUN echo 'ansible ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Preparar directorio .ssh e inyectar la clave pública con permisos estrictos
+RUN mkdir -p /home/ansible/.ssh && \
+    chmod 700 /home/ansible/.ssh
+
+COPY --chown=ansible:ansible id_rsa.pub /home/ansible/.ssh/authorized_keys
+
+RUN chmod 600 /home/ansible/.ssh/authorized_keys && \
+    chown -R ansible:ansible /home/ansible/.ssh
+
+# Configurar runtime de SSH y habilitar servicios en systemd
+RUN mkdir -p /var/run/sshd && \
+    systemctl enable ssh && \
+    systemctl enable docker
+
+EXPOSE 22
+
+CMD ["/lib/systemd/systemd"]
+
+```
+
+### Paso B: Configurar el Docker Compose (En tu máquina host)
+
+Asegúrate de que tu archivo `docker-compose.yml` construya usando el nuevo Dockerfile, declare el nodo con privilegios elevados (`privileged: true`) y mapee los `cgroups`:
+
+```yaml
+  ubuntu-node1:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu-dind
+    container_name: ubuntu-node1
+    privileged: true
+    cgroup: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ubuntu-node1-docker:/var/lib/docker
+    ports:
+      - "8080:80"
+      - "8081:81"
+      - "8082:443"
+    networks:
+      - lab-net
+
+volumes:
+  ubuntu-node1-docker:
+
+```
+
+### Paso C: Ajustar el Storage Driver (Dentro del Nodo)
+
+Una vez que levantes tu entorno con `docker compose up -d`, ingresa al nodo. Incluso con el modo privilegiado activo, el driver de almacenamiento `overlay2` anidado puede fallar. Aplica esta solución dentro del contenedor `ubuntu-node1`:
+
+1. Crea o edita el archivo `/etc/docker/daemon.json` en tu nodo de prueba:
+```json
+{
+  "storage-driver": "vfs"
+}
+
+```
+
+
+2. Reinicia el servicio de Docker en el nodo para aplicar el cambio:
+```bash
+sudo systemctl restart docker
+
+```
+
+
+
+---
+
+
+
+
+
+
+## 3. Ejercicio A: Troubleshooting de Storage Drivers (*Workaround*)
 
 A veces, al interactuar con Docker, falla con el error `overlay ... invalid argument`. Esto es común en ciertos VPS (como OpenVZ o LXC), entornos anidados (DinD) o kernels antiguos que no soportan bien `overlayfs`. Este ejercicio aplica un *workaround* forzando el uso del driver `vfs` para garantizar que el resto del laboratorio funcione sin problemas.
 
@@ -82,7 +184,7 @@ Ejecuta `ansible-playbook test-docker-fix.yml`. Si el test de `hello-world` devu
 
 ---
 
-## 3. Ejercicio B: Levantar un contenedor (Crear e Iniciar)
+## 4. Ejercicio B: Levantar un contenedor (Crear e Iniciar)
 
 El módulo `docker_container` reemplaza la necesidad de escribir largos comandos imperativos (`docker run`). Solo debes declarar cómo quieres que sea el contenedor final. En este playbook incluimos la instalación del SDK de Python, vital para que Ansible pueda ejecutar las siguientes tareas.
 
@@ -118,7 +220,7 @@ Ejecuta `ansible-playbook test-docker-run.yml`. Ansible descargará la imagen y 
 
 ---
 
-## 4. Ejercicio C: Manejo de Volúmenes Persistentes
+## 5. Ejercicio C: Manejo de Volúmenes Persistentes
 
 Para guardar datos reales, usaremos `docker_volume` para crear almacenamiento persistente y lo montaremos en un nuevo contenedor de Apache.
 
@@ -154,7 +256,7 @@ Ejecuta `ansible-playbook test-docker-volume.yml`. Conéctate por SSH a tu nodo 
 
 ---
 
-## 5. Ejercicio D: Orquestación con Docker Compose
+## 6. Ejercicio D: Orquestación con Docker Compose
 
 Para proyectos de múltiples componentes, lo ideal es transferir un archivo `docker-compose.yml`. Ansible copiará la configuración al nodo y usará el plugin interno de Compose para levantarlo.
 
@@ -200,7 +302,7 @@ Ejecuta `ansible-playbook test-docker-compose.yml`. Esto es exactamente igual a 
 
 ---
 
-## 6. Ejercicio E: Parar, Borrar y Limpiar (Destrucción)
+## 7. Ejercicio E: Parar, Borrar y Limpiar (Destrucción)
 
 En Ansible, no tienes que usar comandos explícitos de borrado. Simplemente cambias tu declaración de estado a `absent` y Ansible se encarga de detener los procesos y limpiar la infraestructura.
 
