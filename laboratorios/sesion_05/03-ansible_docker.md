@@ -1,4 +1,4 @@
----
+
 
 # Laboratorio 3: Gestión del Ciclo de Vida de Docker con Ansible
 
@@ -15,7 +15,8 @@ Este laboratorio asume que estás trabajando en un entorno moderno (como contene
 * Desplegar y orquestar múltiples servicios utilizando `docker_compose_v2`.
 * Limpiar el entorno destruyendo los recursos de forma automatizada.
 
-> **Nota previa:** Asegúrate de tener instalada la colección en tu máquina de control ejecutando `ansible-galaxy collection install community.docker` antes de comenzar.
+> [\!NOTE]
+> Asegúrate de tener instalada la colección en tu máquina de control ejecutando `ansible-galaxy collection install community.docker` antes de comenzar.
 
 ---
 
