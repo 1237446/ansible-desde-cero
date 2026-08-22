@@ -75,6 +75,7 @@ Este rol debe ser inteligente. Detectará qué sistema operativo está ejecutand
   ansible.builtin.apt:
     name: ufw
     state: present
+    update_cache: yes
 
 - name: Permitir trafico SSH
   community.general.ufw:
