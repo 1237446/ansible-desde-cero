@@ -94,7 +94,9 @@ A continuación tienes a tu disposición las diapositivas de cada sesión en for
 | **Presentación Sesión 1** | Arquitectura SSH, Modelo Push y Fundamentos Agentless. | [📥 Bajar](./diapositivas/Automatización_con_Ansible_1.pdf) |
 | **Presentación Sesión 2** | Lenguaje YAML, Estructura de Playbooks e Idempotencia. | [📥 Bajar](./diapositivas/Automatización_con_Ansible_2.pdf) |
 | **Presentación Sesión 3** | Automatización Multiservidor, Variables y Manejadores. | [📥 Bajar](./diapositivas/Automatización_con_Ansible_3.pdf) |
-
+| **Presentación Sesión 4** | Variables, Facts, Condicionales y Templates.           | [📥 Bajar](./diapositivas/Automatización_con_Ansible_4.pdf) |
+| **Presentación Sesión 5** | Roles, Monitoreo y Buenas Practicas.                   | [📥 Bajar](./diapositivas/Automatización_con_Ansible_5.pdf) |
+| **Presentación Sesión 6** | Seguridad, Backups y Despliegue Final.                 | [📥 Bajar](./diapositivas/Automatización_con_Ansible_6.pdf) |
 <br>
 <div align="center">
   <i>Construido para la comunidad de <b>Cursos PIT - Transformación Digital OTI UNI</b></i>
