@@ -23,7 +23,9 @@ Un vistazo paso a paso de tu viaje de aprendizaje. Sigue el orden de estas etapa
 | **01** | **Primeros pasos y comandos Ad-Hoc** | Entender la arquitectura *Agentless* por SSH, configurar el entorno y ejecutar comandos de diagnóstico en múltiples nodos. | [Abrir](./clases/sesion_1.md) |
 | **02** | **Primer playbook y despliegue de Nginx** | Escribir y estructurar variables, listas y mapas en formato YAML para lograr automatizaciones idempotentes y libres de errores. | [Abrir](./clases/sesion_2.md) |
 | **03** | **Inventarios y Automatización Multiservidor** | Orquestar múltiples roles (Web/DB) usando inventarios dinámicos, control de paralelismo y *handlers* eficientes. | [Abrir](./clases/sesion_3.md) |
-| **04** | **Variables, Facts, Condicionales y Templates** | Crear playbooks inteligentes que tomen decisiones basadas en variables del sistema y utilicen motores de plantillas Jinja2. | [Abrir](./clases) |
+| **04** | **Variables, Facts, Condicionales y Templates** | Crear playbooks inteligentes que tomen decisiones basadas en variables del sistema y utilicen motores de plantillas Jinja2. | [Abrir](./clases/sesion_4.md) |
+| **04** | **Roles, Monitoreo y Buenas Practicas** |  Arquitectura de Roles, refactorización de código, manejo de dependencias con Ansible Galaxy y Collections. | [Abrir](./clases/sesion_6.md) |
+| **04** | **Seguridad, Backups y Despliegue Final** | Seguridad criptográfica con Ansible Vault (separación de variables y archivos inline), hardening de SSH, UFW, Fail2Ban. | [Abrir](./clases/sesion_6.md) |
 
 ---
 
