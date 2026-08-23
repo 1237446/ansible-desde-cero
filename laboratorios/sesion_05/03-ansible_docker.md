@@ -94,30 +94,69 @@ volumes:
 
 ```
 
-### Paso C: Ajustar el Storage Driver (Dentro del Nodo)
-
-Una vez que levantes tu entorno con `docker compose up -d`, ingresa al nodo. Incluso con el modo privilegiado activo, el driver de almacenamiento `overlay2` anidado puede fallar. Aplica esta solución dentro del contenedor `ubuntu-node1`:
-
-1. Crea o edita el archivo `/etc/docker/daemon.json` en tu nodo de prueba:
-```json
-{
-  "storage-driver": "vfs"
-}
-
-```
-
-
-2. Reinicia el servicio de Docker en el nodo para aplicar el cambio:
-```bash
-sudo systemctl restart docker
-
-```
-
-
-
 ---
 
+### Paso C: Troubleshooting de Storage Drivers (*Workaround*)
 
+A veces, al interactuar con Docker, falla con el error `overlay ... invalid argument`. Esto es común en ciertos VPS (como OpenVZ o LXC), entornos anidados (DinD) o kernels antiguos que no soportan bien `overlayfs`. Este ejercicio aplica un *workaround* forzando el uso del driver `vfs` para garantizar que el resto del laboratorio funcione sin problemas.
+
+#### Crea el Playbook (`test-docker-fix.yml`)
+
+```yaml
+---
+- name: Workaround para error de overlayfs (Invalid Argument)
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Parar el servicio de Docker antes de reconfigurar
+      ansible.builtin.service:
+        name: docker
+        state: stopped
+
+    - name: Configurar daemon de Docker con vfs y snapshotter desactivado
+      ansible.builtin.copy:
+        dest: /etc/docker/daemon.json
+        mode: '0644'
+        content: |
+          {
+            "storage-driver": "vfs",
+            "features": {
+              "containerd-snapshotter": false
+            }
+          }
+
+    - name: Limpiar snapshotter overlayfs heredado si existe
+      ansible.builtin.file:
+        path: /var/lib/containerd/io.containerd.snapshotter.v1.overlayfs
+        state: absent
+      failed_when: false
+
+    - name: Arrancar Docker con la nueva configuración vfs
+      ansible.builtin.service:
+        name: docker
+        state: started
+
+    - name: Verificar hello-world tras aplicar el parche
+      ansible.builtin.command: docker run --rm hello-world
+      register: hello_after_fix
+      changed_when: false
+
+    - name: Mostrar resultado de validación
+      ansible.builtin.debug:
+        var: hello_after_fix.stdout_lines
+
+```
+
+> [\!TIP]
+> El driver `vfs` funciona para salir del paso en laboratorios, pero penaliza el rendimiento y el consumo de disco. En producción real, lo recomendable es utilizar `overlay2` sobre un host totalmente compatible.
+
+#### Prueba Práctica
+
+Ejecuta `ansible-playbook test-docker-fix.yml`. Si el test de `hello-world` devuelve el mensaje de bienvenida de Docker, tu entorno está listo.
+
+---
 
 
 
