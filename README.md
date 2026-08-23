@@ -85,6 +85,32 @@ La mejor forma de asimilar la automatización es practicando. En esta sección e
 
 </details>
 
+<details>
+<summary><b>🟤 Sesión 5: Roles, Monitoreo y Buenas Prácticas</b></summary>
+<br>
+
+| Laboratorio | Descripción | Enlace |
+| :--- | :--- | :---: |
+| **01. Roles en Ansible** | Refactorización de playbooks a una arquitectura modular y reutilizable. | [🚀 Ir](./laboratorios/sesion_05/00-roles.md) |
+| **02. Ansible Galaxy** | Descarga, instalación y gestión de dependencias y roles de la comunidad. | [🚀 Ir](./laboratorios/sesion_05/01-ansible_galaxy.md) |
+| **03. Ansible Collections** | Uso de colecciones empaquetadas para extender funcionalidades (Nube, Docker). | [🚀 Ir](./laboratorios/sesion_05/02-ansible_collections.md) |
+| **04. Ansible y Docker** | Despliegue y orquestación de contenedores (Prometheus/Node Exporter). | [🚀 Ir](./laboratorios/sesion_05/03-ansible_docker.md) |
+| **05. Bonus Track** | Reto adicional sobre casos de uso avanzados y mejores prácticas. | [🚀 Ir](./laboratorios/sesion_05/04-bonus-track.md) |
+
+</details>
+
+<details>
+<summary><b>⚫ Sesión 6: Seguridad, Backups y Despliegue Final</b></summary>
+<br>
+
+| Laboratorio | Descripción | Enlace |
+| :--- | :--- | :---: |
+| **01. Ansible Vault** | Cifrado criptográfico de contraseñas y datos sensibles para el entorno. | [🚀 Ir](./laboratorios/sesion_06/00-ansible_vault.md) |
+| **02. Hardening Básico** | Aplicación de medidas de seguridad y protección en el sistema (SSH, UFW, Fail2Ban). | [🚀 Ir](./laboratorios/sesion_06/01-hardering_basico.md) |
+| **03. Laboratorio Final** | Integración total: despliegue de infraestructura segura y observable desde cero. | [🚀 Ir](./laboratorios/sesion_06/02-lab_final.md) |
+
+</details>
+
 ---
 
 ## 📚 Material de Apoyo
