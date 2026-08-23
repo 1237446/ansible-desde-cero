@@ -1,4 +1,4 @@
-# Laboratorio 16: Despliegue de Nextcloud en Arquitectura de 3 Niveles (Ubuntu)
+# Laboratorio 02: Despliegue de Nextcloud en Arquitectura de 3 Niveles (Ubuntu)
 
 Este proyecto final unifica todos los conceptos aprendidos (Ansible Vault, Roles, Bucles, Condicionales y Variables Cruzadas) en un caso de uso real y robusto. Separaremos los servicios en tres nodos Ubuntu distintos para replicar una arquitectura de producción:
 
@@ -14,16 +14,25 @@ Este proyecto final unifica todos los conceptos aprendidos (Ansible Vault, Roles
 
 Asegúrate de que los tres nodos estén claramente separados en grupos distintos.
 
-```ini
-[nextcloud_web]
-ubuntu-web ansible_host=192.168.1.10
-
-[mariadb_db]
-ubuntu-db ansible_host=192.168.1.11
-
-[redis_cache]
-ubuntu-cache ansible_host=192.168.1.12
-
+```yaml
+all:
+  children:
+    redis:
+      hosts:
+        ubuntu-node1:
+    mariadb:
+      hosts:
+        ubuntu-node2:
+    nextcloud:
+      hosts:
+        ubuntu-node3:
+    servers:
+      children:
+        redis:
+        mariadb:
+        nextcloud:
+  vars:
+    ansible_become_password: password
 ```
 
 ### B. Protege las Contraseñas con Ansible Vault
@@ -42,7 +51,8 @@ Añade este contenido (asigna una contraseña de bóveda cuando te lo pida):
 ---
 nc_db_password: "SecretoNextcloud2026!"
 nc_admin_password: "AdminNextcloudSeguro!"
-
+mariadb_db: "nextcloud_db"
+mariadb_user: "nextcloud_user"
 ```
 
 ---
@@ -136,19 +146,18 @@ Aquí instalaremos el motor y crearemos la base de datos utilizando la contrase�
 
 - name: Crear base de datos para Nextcloud
   community.mysql.mysql_db:
-    name: nextcloud_db
+    name: "{{ mariadb_db }}"
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
 - name: Crear usuario de DB usando Ansible Vault
   community.mysql.mysql_user:
-    name: nextcloud_user
+    name: "{{ mariadb_user }}"
     password: "{{ nc_db_password }}"
-    priv: 'nextcloud_db.*:ALL'
+    priv: "{{ mariadb_db }}.*:ALL"
     host: '%'
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
-
 ```
 
 ### Crea el Handler `roles/mariadb_node/handlers/main.yml`:
@@ -239,15 +248,14 @@ Aquí inyectamos las IPs dinámicas y las contraseñas cifradas.
 <?php
 $AUTOCONFIG = array(
   "dbtype"        => "mysql",
-  "dbname"        => "nextcloud_db",
-  "dbuser"        => "nextcloud_user",
+  "dbname"        => "{{ mariadb_db }}",
+  "dbuser"        => "{{ mariadb_user}}",
   "dbpass"        => "{{ nc_db_password }}",
-  "dbhost"        => "{{ hostvars[groups['mariadb_db'][0]]['ansible_host'] }}",
+  "dbhost"        => "{{ hostvars[groups['mariadb'][0]]['ansible_default_ipv4']['address'] }}",
   "directory"     => "/var/www/nextcloud/data",
   "adminlogin"    => "admin",
   "adminpass"     => "{{ nc_admin_password }}",
 );
-
 ```
 
 ### C. Crea la Plantilla de Apache `roles/nextcloud_node/templates/nextcloud.conf.j2`:
