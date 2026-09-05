@@ -1,0 +1,38 @@
+FROM linuxserver/code-server:latest
+
+# 1. Instalar Ansible, cliente SSH, sshpass y utilidades
+RUN apt-get update && \
+    apt-get install -y \
+        ansible \
+        openssh-client \
+        sshpass \
+        python3-pip \
+        git \
+        curl \
+        iputils-ping && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 2. Configurar defaults globales para Ansible
+RUN mkdir -p /etc/ansible && \
+    printf "[defaults]\nhost_key_checking = False\nretry_files_enabled = False\ninterpreter_python = auto_silent\n" > /etc/ansible/ansible.cfg
+
+# 3. Configurar entorno SSH exclusivamente para el usuario 'abc' (usuario de la terminal en code-server)
+RUN mkdir -p /config/.ssh && \
+    chmod 700 /config/.ssh && \
+    printf "Host *\n    StrictHostKeyChecking no\n    UserKnownHostsFile /dev/null\n" > /config/.ssh/config && \
+    chmod 600 /config/.ssh/config
+
+# 4. Copiar llaves SSH con permisos y propietario adecuados para 'abc'
+COPY --chown=abc:abc id_rsa /config/.ssh/id_rsa
+COPY --chown=abc:abc id_rsa.pub /config/.ssh/id_rsa.pub
+RUN chmod 600 /config/.ssh/id_rsa && \
+    chmod 644 /config/.ssh/id_rsa.pub
+
+# 5. Configurar Modo Oscuro (Dark Modern) y terminal bash por defecto en VS Code
+RUN mkdir -p /config/data/User && \
+    echo '{\n\
+  "workbench.colorTheme": "Default Dark Modern",\n\
+  "workbench.startupEditor": "none",\n\
+  "terminal.integrated.defaultProfile.linux": "bash"\n\
+}' > /config/data/User/settings.json

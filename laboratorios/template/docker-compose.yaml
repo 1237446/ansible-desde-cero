@@ -1,0 +1,51 @@
+services:
+  ansible-control:
+    build:
+      context: .
+      dockerfile: Dockerfile.control
+    container_name: ansible-control
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Lima
+      - PASSWORD=ansible
+      - SUDO_PASSWORD=ansible
+    volumes:
+      - ./workspace:/config/workspace
+    ports:
+      - "8443:8443"
+    networks:
+      - lab-net
+    restart: unless-stopped
+
+  ubuntu-node:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    container_name: ansible-ubuntu
+    privileged: true
+    cgroup: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    ports:
+      - "8080:80"
+    networks:
+      - lab-net
+
+  rocky-node:
+    build:
+      context: .
+      dockerfile: Dockerfile.rocky
+    container_name: ansible-rocky
+    privileged: true
+    cgroup: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    ports:
+      - "8081:80"
+    networks:
+      - lab-net
+
+networks:
+  lab-net:
+    driver: bridge

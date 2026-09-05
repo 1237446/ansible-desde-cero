@@ -1,0 +1,27 @@
+FROM geerlingguy/docker-rockylinux9-ansible:latest
+
+# Instalar OpenSSH Server, Sudo y utilidades de contraseñas
+RUN dnf install -y openssh-server sudo passwd && \
+    dnf clean all
+
+# Crear usuario 'ansible', asignar contraseña y grupo wheel (sudo en RHEL/Rocky)
+RUN useradd -m -s /bin/bash -u 1001 ansible && \
+    echo 'ansible:password' | chpasswd && \
+    usermod -aG wheel ansible
+
+# Preparar directorio .ssh e inyectar la clave pública con permisos estrictos
+RUN mkdir -p /home/ansible/.ssh && \
+    chmod 700 /home/ansible/.ssh
+
+COPY --chown=ansible:ansible id_rsa.pub /home/ansible/.ssh/authorized_keys
+
+RUN chmod 600 /home/ansible/.ssh/authorized_keys && \
+    chown ansible:ansible /home/ansible/.ssh
+
+# Generar claves del host SSH y habilitar el servicio en systemd
+RUN ssh-keygen -A && \
+    systemctl enable sshd
+
+EXPOSE 22
+
+CMD ["/usr/sbin/init"]
