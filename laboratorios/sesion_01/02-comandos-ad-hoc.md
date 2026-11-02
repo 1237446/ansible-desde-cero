@@ -24,25 +24,28 @@ http://direccion_IP_de_la_VM:8443
 Crea un archivo de texto llamado `inventory.ini` en tu directorio actual:
 ```bash
 [ubuntu]
-ubuntu-node1
+ubuntu-node ansible_host=nodo-ubuntu-<alumno>
 
 [rocky]
-redhat-node1
+redhat-node ansible_host=nodo-rocky-<alumno>
 
 [all:vars]
-ansible_user=ansible
+ansible_connection=ssh
+ansible_user=<alumno>
+ansible_password=<contraseña_alumno
+ansible_become=true
 ```
 
 ### Paso 3: Verificar que Ansible detecte los hosts
 Ejecuta el siguiente comando para listar las máquinas de tu inventario:
 ```bash
-ansible all -i inventario.ini --list-hosts
+ansible all -i inventario.ini --list
 ```
 *Deberías ver listados los servidores `ubuntu-node1` y `rhel-node1` en la salida.*
 ```bash
   hosts (2):
-    ubuntu-node1
-    redhat-node1
+    ubuntu-node
+    redhat-node
 ```
 
 ### Paso 4: Configurar autenticación por Clave SSH
@@ -76,8 +79,8 @@ The key's randomart image is:
 
 Copiar la clave pública a los servidores remotos:
 ```bash
-ssh-copy-id ansible@ubuntu-node1
-ssh-copy-id ansible@redhat-node1
+ssh-copy-id ansible@ubuntu-node
+ssh-copy-id ansible@redhat-node
 ```
 
 ---
@@ -115,7 +118,7 @@ Consulta el tiempo de actividad (`uptime`) y el nombre de host oficial de todos 
 
 **uptime:**
 ```bash
-ansible web -i inventario.ini -m command -a "uptime"
+ansible ubuntu -i inventario.ini -m command -a "uptime"
 ```
 ```bash
 ansible-ubuntu | CHANGED | rc=0 >>
@@ -142,11 +145,11 @@ Usa el módulo `copy` para enviar una línea de texto a un archivo remoto y lueg
 
 1. **Copiar contenido:**
    ```bash
-   ansible web -i inventario.ini -m copy -a "content='Prueba de automatizacion\n' dest=/tmp/prueba.txt"
+   ansible ubuntu -i inventario.ini -m copy -a "content='Prueba de automatizacion\n' dest=/tmp/prueba.txt"
    ```
    *Notarás que la salida sale en color **Amarillo** (changed: true) porque el archivo no existía en el destino.*
    ```json
-   ubuntu-node1 | CHANGED => {
+   ubuntu-node | CHANGED => {
     "ansible_facts": {
         "discovered_interpreter_python": "/usr/bin/python3.10"
     },
@@ -167,16 +170,16 @@ Usa el módulo `copy` para enviar una línea de texto a un archivo remoto y lueg
 
 2. **Verificar el contenido en el destino:**
    ```bash
-   ansible web -i inventario.ini -m command -a "cat /tmp/prueba.txt"
+   ansible ubuntu -i inventario.ini -m command -a "cat /tmp/prueba.txt"
    ```
    ```bash
-    ubuntu-node1 | CHANGED | rc=0 >>
+    ubuntu-node | CHANGED | rc=0 >>
     Prueba de automatizacion
    ```
 3. **Ejecutar la copia nuevamente:**
    Vuelve a lanzar el comando del paso 1. Notarás que ahora el resultado es verde (`ok`) e indica `"changed": false`. Esto demuestra la **idempotencia** de Ansible: al detectar que el archivo remoto ya tiene el mismo contenido, no lo sobrescribe innecesariamente.
    ```json
-    ubuntu1-node1 | SUCCESS => {
+    ubuntu1-node | SUCCESS => {
         "ansible_facts": {
             "discovered_interpreter_python": "/usr/bin/python3.10"
         },
