@@ -100,6 +100,25 @@ ssh-copy-id ansible@ubuntu-node
 ssh-copy-id ansible@redhat-node
 ```
 
+Edita el archivo config dentro del directorio oculto .ssh de tu usuario. Si no existe, tu editor lo creará.
+```bash
+nano ~/.ssh/config
+```
+```bash
+Host ubuntu
+    HostName nodo-ubuntu-<alumno>
+    User adrian
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+
+Host rocky
+    HostName nodo-rocky-<alumno>
+    User adrian
+    IdentityFile ~/.ssh
+/id_ed25519
+    IdentitiesOnly yes
+```
+
 ---
 
 ## 3. Ejercicios Prácticos Guiados
