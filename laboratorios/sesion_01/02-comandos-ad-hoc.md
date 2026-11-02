@@ -118,6 +118,10 @@ Host rocky
 /id_ed25519
     IdentitiesOnly yes
 ```
+Ajusta los permisos del archivo (Crítico):
+```bash
+chmod 600 ~/.ssh/config
+```
 
 ---
 
