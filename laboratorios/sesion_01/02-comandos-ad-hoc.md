@@ -32,8 +32,9 @@ redhat-node ansible_host=nodo-rocky-<alumno>
 [all:vars]
 ansible_connection=ssh
 ansible_user=<alumno>
-ansible_password=<contraseña_alumno
+ansible_password=<contraseña_alumno>
 ansible_become=true
+ansible_become_password=<contraseña_alumno>
 ```
 
 ### Paso 3: Verificar que Ansible detecte los hosts
