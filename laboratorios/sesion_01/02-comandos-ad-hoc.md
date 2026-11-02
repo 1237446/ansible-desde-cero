@@ -37,7 +37,23 @@ ansible_become=true
 ansible_become_password=<contraseña_alumno>
 ```
 
-### Paso 3: Verificar que Ansible detecte los hosts
+### Paso 3: Crear el archivo de configuracion
+Crea un archivo de texto llamado `ansible.cfg` en tu directorio actual:
+```bash
+[defaults]
+inventory = inventario.ini
+remote_user = <alumno>
+stdout_callback = default
+host_key_checking = false
+
+[privilege_escalation]
+become = true
+become_method = sudo
+become_user = root
+become_password=<contraseña_alumno>
+```
+
+### Paso 4: Verificar que Ansible detecte los hosts
 Ejecuta el siguiente comando para listar las máquinas de tu inventario:
 ```bash
 ansible all -i inventario.ini --list
@@ -49,7 +65,7 @@ ansible all -i inventario.ini --list
     redhat-node
 ```
 
-### Paso 4: Configurar autenticación por Clave SSH
+### Paso 5: Configurar autenticación por Clave SSH
 Generar la clave SSH en el nodo de control:
 ```bash
 ssh-keygen -t rsa -b 4096
