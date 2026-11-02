@@ -68,7 +68,7 @@ ansible all -i inventario.ini --list
 ### Paso 5: Configurar autenticación por Clave SSH
 Generar la clave SSH en el nodo de control:
 ```bash
-ssh-keygen -t rsa -b 4096
+ssh-keygen -t ed25519 -C "admin_infra"
 ```
 ```bash
 Generating public/private rsa key pair.
