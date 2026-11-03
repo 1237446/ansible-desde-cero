@@ -24,17 +24,17 @@ http://direccion_IP_de_la_VM:8443
 Crea un archivo de texto llamado `inventory.ini` en tu directorio actual:
 ```bash
 [ubuntu]
-ubuntu-node ansible_host=nodo-ubuntu-<alumno>
+ubuntu-node ansible_host=nodo-ubuntu
 
 [rocky]
-redhat-node ansible_host=nodo-rocky-<alumno>
+redhat-node ansible_host=nodo-rocky
 
 [all:vars]
 ansible_connection=ssh
-ansible_user=<alumno>
-ansible_password=<contraseña_alumno>
+ansible_user=ansible
+ansible_password=ansible
 ansible_become=true
-ansible_become_password=<contraseña_alumno>
+ansible_become_password=ansible
 ```
 
 ### Paso 3: Crear el archivo de configuracion
@@ -42,7 +42,7 @@ Crea un archivo de texto llamado `ansible.cfg` en tu directorio actual:
 ```bash
 [defaults]
 inventory = inventario.ini
-remote_user = <alumno>
+remote_user = ansible
 stdout_callback = default
 host_key_checking = false
 
@@ -50,7 +50,7 @@ host_key_checking = false
 become = true
 become_method = sudo
 become_user = root
-become_password=<contraseña_alumno>
+become_password=ansible
 ```
 
 ### Paso 4: Verificar que Ansible detecte los hosts
@@ -106,16 +106,15 @@ nano ~/.ssh/config
 ```
 ```bash
 Host ubuntu
-    HostName nodo-ubuntu-<alumno>
-    User adrian
+    HostName nodo-ubuntu
+    User ansible
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 
 Host rocky
-    HostName nodo-rocky-<alumno>
-    User adrian
-    IdentityFile ~/.ssh
-/id_ed25519
+    HostName nodo-rocky
+    User ansible
+    IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 ```
 Ajusta los permisos del archivo (Crítico):
