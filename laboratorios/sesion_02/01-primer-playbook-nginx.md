@@ -53,7 +53,7 @@ Copia y pega el siguiente código en el archivo:
           </head>
           <body>
               <h1>Servidor Ubuntu Linux con Ansible</h1>
-              <p>Despliegue e infraestructura totalmente automatizados por la OTI.</p>
+              <p>Despliegue e infraestructura totalmente automatizados para el PIT.</p>
           </body>
           </html>
         owner: www-data
