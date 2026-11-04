@@ -59,19 +59,4 @@ docker run hello-world
 ```
 
 ---
-
-### Paso 6: Descargar el repositorio del laboratorio
-Clona el repositorio oficial de *spurin*, el cual contiene los entornos necesarios para el desarrollo de las prácticas:
-```bash
-git clone https://github.com/spurin/diveintoansible-lab.git
-```
-
-### Paso 7: Desplegar los contenedores
-Accede a la carpeta descargada y ejecuta el siguiente comando para levantar la infraestructura del laboratorio en segundo plano:
-```bash
-cd diveintoansible-lab
-docker compose up -d
-```
-
----
 [Siguiente: Laboratorio 01 - Comandos Ad-Hoc](./01-autobiografia-yaml.md)
