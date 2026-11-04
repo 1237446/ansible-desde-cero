@@ -61,9 +61,9 @@ import json
 import docker
 
 def get_inventory():
+    # Solo inicializamos las estructuras base obligatorias de Ansible
     inventory = {
-        "webservers": {"hosts": []},
-        "databases": {"hosts": []},
+        "ungrouped": {"hosts": []},
         "_meta": {"hostvars": {}}
     }
 
@@ -72,15 +72,24 @@ def get_inventory():
         containers = client.containers.list(filters={"status": "running"})
         
         for container in containers:
+            name = container.name
             labels = container.labels
-            group = labels.get("ansible_group")
+            raw_groups = labels.get("ansible_group", "")
             
-            if group in inventory:
-                name = container.name
-                inventory[group]["hosts"].append(name)
-                inventory["_meta"]["hostvars"][name] = {
-                    "ansible_connection": "docker"
-                }
+            assigned = False
+            for group in raw_groups.split(","):
+                group = group.strip()
+                if group:  # Si la etiqueta no está vacía
+                    # Si el grupo no existe en inventory, lo crea automáticamente con {"hosts": []}
+                    inventory.setdefault(group, {"hosts": []})["hosts"].append(name)
+                    assigned = True
+            
+            if not assigned:
+                inventory["ungrouped"]["hosts"].append(name)
+                
+            inventory["_meta"]["hostvars"][name] = {
+                "ansible_connection": "docker"
+            }
     except Exception as e:
         pass
             
@@ -88,7 +97,6 @@ def get_inventory():
 
 if __name__ == "__main__":
     print(json.dumps(get_inventory(), indent=2))
-
 ```
 
 ---
