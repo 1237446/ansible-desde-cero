@@ -78,13 +78,13 @@ Ahora que sabemos cómo se llaman las variables gracias al comando Ad-Hoc, vamos
   tasks:
     - name: Mostrar un reporte detallado del hardware y SO
       ansible.builtin.debug:
-        msg: |
-          --- Reporte de {{ ansible_facts['hostname'] }} ---
-          Familia del SO : {{ ansible_facts['os_family'] }}
-          Distribución   : {{ ansible_facts['distribution'] }}
-          Versión del SO : {{ ansible_facts['distribution_version'] }}
-          CPUs Virtuales : {{ ansible_facts['processor_vcpus'] }}
-          Memoria Total  : {{ ansible_facts['memtotal_mb'] }} MB
+        msg:
+          -  "--- Reporte de {{ ansible_facts['hostname'] }} ---"
+          -  "Familia del SO : {{ ansible_facts['os_family'] }}"
+          -  "Distribución   : {{ ansible_facts['distribution'] }}"
+          -  "Versión del SO : {{ ansible_facts['distribution_version'] }}"
+          -  "CPUs Virtuales : {{ ansible_facts['processor_vcpus'] }}"
+          -  "Memoria Total  : {{ ansible_facts['memtotal_mb'] }} MB"
 
 ```
 
@@ -104,11 +104,25 @@ ok: [rocky-node1]
 # ...
 
 TASK [Mostrar un reporte detallado del hardware y SO] ******************************************************************
-ok: [ubuntu-node1] => {
-    "msg": "---\nReporte de ubuntu-node1 ---\nFamilia del SO : Debian\nDistribución   : Ubuntu\nVersión del SO : 22.04\nCPUs Virtuales : 4\nMemoria Total  : 8192 MB"
+ok: [nodo-ubuntu] => {
+    "msg": [
+        "--- Reporte de nodo-ubuntu ---",
+        "Familia del SO : Debian",
+        "Distribución   : Ubuntu",
+        "Versión del SO : 24.04",
+        "CPUs Virtuales : 4",
+        "Memoria Total  : 2048 MB"
+    ]
 }
-ok: [rocky-node1] => {
-    "msg": "---\nReporte de rocky-node1 ---\nFamilia del SO : RedHat\nDistribución   : Rocky\nVersión del SO : 9.2\nCPUs Virtuales : 4\nMemoria Total  : 8192 MB"
+ok: [nodo-rocky] => {
+    "msg": [
+        "--- Reporte de nodo-rocky ---",
+        "Familia del SO : RedHat",
+        "Distribución   : Rocky",
+        "Versión del SO : 9.8",
+        "CPUs Virtuales : 4",
+        "Memoria Total  : 2048 MB"
+    ]
 }
 
 ```
