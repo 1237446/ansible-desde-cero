@@ -2,6 +2,10 @@
 - name: Instalar Podman en Rocky Linux (VM o contenedor Sysbox)
   hosts: rocky
   become: true
+  vars:
+    # vfs: funciona siempre (incluido Sysbox sin /dev/fuse), pero usa más disco.
+    # overlay: más eficiente; úsalo en VMs o si /var/lib/containers es un montaje del host.
+    podman_driver: "vfs"
 
   tasks:
     - name: 0. Saltar hosts que no sean Rocky/RHEL
@@ -15,19 +19,43 @@
           - buildah
           - skopeo
           - slirp4netns
-          - fuse-overlayfs
         state: present
 
-    - name: 2. Verificar que Podman responde
+    - name: 2. Consultar el storage driver actual
+      ansible.builtin.command: podman info --format '{{ "{{" }}.Store.GraphDriverName{{ "}}" }}'
+      register: driver_actual
+      changed_when: false
+      failed_when: false
+
+    - name: 3. Resetear almacenamiento si hay que cambiar de driver (borra imágenes y contenedores)
+      ansible.builtin.shell: |
+        podman system reset -f || true
+        rm -rf /var/lib/containers/storage/* /run/containers/storage/*
+      args:
+        executable: /bin/bash
+      when: driver_actual.stdout | trim != podman_driver
+
+    - name: 4. Configurar storage driver de Podman
+      ansible.builtin.copy:
+        dest: /etc/containers/storage.conf
+        mode: '0644'
+        content: |
+          # Gestionado por Ansible
+          [storage]
+          driver = "{{ podman_driver }}"
+          runroot = "/run/containers/storage"
+          graphroot = "/var/lib/containers/storage"
+
+    - name: 5. Verificar que Podman responde
       ansible.builtin.command: podman info --format '{{ "{{" }}.Store.GraphDriverName{{ "}}" }}'
       register: podman_status
       changed_when: false
 
-    - name: 3. Obtener versión de Podman
+    - name: 6. Obtener versión de Podman
       ansible.builtin.command: podman --version
       register: podman_version
       changed_when: false
 
-    - name: 4. Confirmación
+    - name: 7. Confirmación
       ansible.builtin.debug:
         msg: "{{ podman_version.stdout }} funcionando en {{ inventory_hostname }} (Storage Driver: {{ podman_status.stdout }})"
