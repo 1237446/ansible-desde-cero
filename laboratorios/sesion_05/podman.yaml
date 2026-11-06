@@ -1,0 +1,33 @@
+---
+- name: Instalar Podman en Rocky Linux (VM o contenedor Sysbox)
+  hosts: rocky
+  become: true
+
+  tasks:
+    - name: 0. Saltar hosts que no sean Rocky/RHEL
+      ansible.builtin.meta: end_host
+      when: ansible_facts['os_family'] != "RedHat"
+
+    - name: 1. Instalar Podman y herramientas
+      ansible.builtin.dnf:
+        name:
+          - podman
+          - buildah
+          - skopeo
+          - slirp4netns
+          - fuse-overlayfs
+        state: present
+
+    - name: 2. Verificar que Podman responde
+      ansible.builtin.command: podman info --format '{{ "{{" }}.Store.GraphDriverName{{ "}}" }}'
+      register: podman_status
+      changed_when: false
+
+    - name: 3. Obtener versión de Podman
+      ansible.builtin.command: podman --version
+      register: podman_version
+      changed_when: false
+
+    - name: 4. Confirmación
+      ansible.builtin.debug:
+        msg: "{{ podman_version.stdout }} funcionando en {{ inventory_hostname }} (Storage Driver: {{ podman_status.stdout }})"
