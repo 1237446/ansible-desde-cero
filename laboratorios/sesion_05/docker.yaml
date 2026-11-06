@@ -1,12 +1,16 @@
 ---
-- name: Instalar y levantar Docker dentro de contenedor Sysbox
-  hosts: all
+- name: Instalar Docker en Ubuntu (VM o contenedor Sysbox)
+  hosts: ubuntu
   become: true
   vars:
     usuario_docker: "ansible"
 
   tasks:
-    - name: 1. Instalar dependencias previas en Debian/Ubuntu
+    - name: 0. Saltar hosts que no sean Ubuntu
+      ansible.builtin.meta: end_host
+      when: ansible_facts['distribution'] != "Ubuntu"
+
+    - name: 1. Instalar dependencias previas
       ansible.builtin.apt:
         name:
           - ca-certificates
@@ -14,30 +18,29 @@
           - gnupg
         state: present
         update_cache: true
-      when: ansible_facts['os_family'] == "Debian"
 
-    - name: 2. Crear directorio de keyrings en Debian/Ubuntu
+    - name: 2. Crear directorio de keyrings
       ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
         mode: '0755'
-      when: ansible_facts['os_family'] == "Debian"
 
-    - name: 3. Descargar llave GPG oficial de Docker (Debian/Ubuntu)
+    - name: 3. Descargar llave GPG oficial de Docker
       ansible.builtin.get_url:
-        url: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg"
+        url: https://download.docker.com/linux/ubuntu/gpg
         dest: /etc/apt/keyrings/docker.asc
         mode: '0644'
-      when: ansible_facts['os_family'] == "Debian"
 
-    - name: 4. Agregar repositorio oficial de Docker (Debian/Ubuntu)
+    - name: 4. Agregar repositorio oficial de Docker
       ansible.builtin.apt_repository:
-        repo: "deb [arch={{ 'amd64' if ansible_facts['architecture'] == 'x86_64' else ansible_facts['architecture'] }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }} {{ ansible_facts['distribution_release'] }} stable"
+        repo: >-
+          deb [arch={{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}
+          signed-by=/etc/apt/keyrings/docker.asc]
+          https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable
         filename: docker
         state: present
-      when: ansible_facts['os_family'] == "Debian"
 
-    - name: 5. Instalar paquetes de Docker en Debian/Ubuntu
+    - name: 5. Instalar paquetes de Docker
       ansible.builtin.apt:
         name:
           - docker-ce
@@ -47,56 +50,45 @@
           - docker-compose-plugin
         state: present
         update_cache: true
-      when: ansible_facts['os_family'] == "Debian"
 
-    - name: 6. Agregar repositorio oficial de Docker en Rocky/RHEL
-      ansible.builtin.get_url:
-        url: https://download.docker.com/linux/centos/docker-ce.repo
-        dest: /etc/yum.repos.d/docker-ce.repo
-        mode: '0644'
-      when: ansible_facts['os_family'] == "RedHat"
-
-    - name: 7. Instalar paquetes de Docker en Rocky/RHEL
-      ansible.builtin.dnf:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-buildx-plugin
-          - docker-compose-plugin
-        state: present
-      when: ansible_facts['os_family'] == "RedHat"
-
-    - name: 8. Iniciar Docker vía Systemd (si el contenedor Sysbox corre systemd)
+    - name: 6. Iniciar Docker vía systemd
       ansible.builtin.service:
         name: docker
         state: started
         enabled: true
       when: ansible_facts['service_mgr'] == "systemd"
 
-    - name: 9. Iniciar dockerd en segundo plano (si el contenedor NO tiene systemd)
+    - name: 7. Iniciar dockerd en segundo plano (contenedor sin systemd)
       ansible.builtin.shell: |
-        if ! pgrep -x "dockerd" > /dev/null; then
+        if ! pgrep -x dockerd > /dev/null; then
           nohup dockerd > /var/log/dockerd.log 2>&1 &
-          sleep 3
         fi
       args:
         executable: /bin/bash
       changed_when: false
       when: ansible_facts['service_mgr'] != "systemd"
 
-    - name: 10. Agregar usuario al grupo docker para uso sin sudo
+    - name: 8. Comprobar si el usuario existe
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ usuario_docker }}"
+      failed_when: false
+
+    - name: 9. Agregar usuario al grupo docker (uso sin sudo)
       ansible.builtin.user:
         name: "{{ usuario_docker }}"
         groups: docker
         append: true
-      ignore_errors: true
+      when: ansible_facts.getent_passwd[usuario_docker] is defined
 
-    - name: 11. Verificar que el motor Docker responde dentro de Sysbox
-      ansible.builtin.command: docker info
+    - name: 10. Esperar a que Docker responda
+      ansible.builtin.command: docker info --format '{{ "{{" }}.Driver{{ "}}" }}'
       register: docker_status
       changed_when: false
+      retries: 10
+      delay: 3
+      until: docker_status.rc == 0
 
-    - name: 12. Mostrar confirmación de funcionamiento
+    - name: 11. Confirmación
       ansible.builtin.debug:
-        msg: "Docker está corriendo correctamente dentro del contenedor {{ inventory_hostname }} (Storage Driver: {{ docker_status.stdout | regex_search('Storage Driver: .*') }})"
+        msg: "Docker funcionando en {{ inventory_hostname }} (Storage Driver: {{ docker_status.stdout }})"
