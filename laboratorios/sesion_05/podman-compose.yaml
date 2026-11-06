@@ -1,0 +1,36 @@
+---
+- name: Instalar podman-compose en Rocky Linux
+  hosts: all
+  become: true
+
+  tasks:
+    - name: 0. Saltar hosts que no sean Rocky/RHEL
+      ansible.builtin.meta: end_host
+      when: ansible_facts['os_family'] != "RedHat"
+
+    - name: 1. Instalar repositorio EPEL y plugins de dnf
+      ansible.builtin.dnf:
+        name:
+          - epel-release
+          - dnf-plugins-core
+        state: present
+
+    - name: 2. Habilitar repositorio CRB (algunas dependencias de EPEL lo necesitan)
+      ansible.builtin.command: dnf config-manager --set-enabled crb
+      register: crb
+      changed_when: false
+
+    - name: 3. Instalar podman-compose
+      ansible.builtin.dnf:
+        name: podman-compose
+        state: present
+        update_cache: true
+
+    - name: 4. Verificar podman-compose
+      ansible.builtin.command: podman-compose version
+      register: compose_version
+      changed_when: false
+
+    - name: 5. Confirmación
+      ansible.builtin.debug:
+        msg: "{{ compose_version.stdout_lines }}"
