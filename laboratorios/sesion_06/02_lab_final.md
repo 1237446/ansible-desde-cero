@@ -1,4 +1,4 @@
-# Laboratorio 02: Nextcloud en 3 niveles con Ansible (corregido)
+# Laboratorio 02: Nextcloud en 3 niveles con Ansible
 
 Esta versión despliega Nextcloud en dos nodos Ubuntu y deja la instalación terminada y conectada a MariaDB y Redis al acabar el playbook, sin pasos manuales en el navegador.
 
